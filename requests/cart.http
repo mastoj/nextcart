@@ -1,5 +1,20 @@
+### Create cart
+POST http://localhost:5095/cart/1
+
 ### Get sample cart
 GET http://localhost:5095/cart/1
 
 ### Get missing cart
 GET http://localhost:5095/cart/2
+
+### Clear cart
+POST http://localhost:5095/cart/1/clear
+
+### Add item to cart
+POST http://localhost:5095/cart/1/items
+
+### Update item 
+PUT http://localhost:5095/cart/1/items/itemid
+
+### Remove item from cart
+DELETE http://localhost:5095/cart/1/items/itemid
