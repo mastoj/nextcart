@@ -1,0 +1,5 @@
+### Get sample cart
+GET http://localhost:5095/cart/1
+
+### Get missing cart
+GET http://localhost:5095/cart/2
