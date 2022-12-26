@@ -1,16 +1,14 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+using Marten;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using NextCart.Api.Infrastructure;
 
-namespace Cart;
+namespace NextCart.Api.Cart;
 
-public record CartDto(Guid id);
+public record CartDto(Guid cartId);
 
 #region requests
-public record CreateCartRequest(Guid id);
+public record CreateCartRequest(Guid cartId);
 #endregion
 
 public static class CartApi
@@ -30,10 +28,11 @@ public static class CartApi
         return group;
     }
 
-    private static Results<Created<CartDto>, NotFound> CreateCart([FromBody] CreateCartRequest request)
+    private static async Task<Results<Created<CartDto>, NotFound>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
-        var cart = new CartDto(request.id);
-        return TypedResults.Created($"/cart/{request.id}", cart);
+        var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
+        var cart = new CartDto(result.CartId);
+        return TypedResults.Created($"/cart/{request.cartId}", cart);
     }
 
     //     private static Results<Ok<CartDto>, NotFound> GetCart([FromBody] CreateCartRequest request)
