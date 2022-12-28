@@ -38,8 +38,7 @@ public static class MartenExtensions
         documentSession.Events.StartStream<T>(id, events);
         await documentSession.SaveChangesAsync(token: ct);
         Console.WriteLine("==> Saved: " + id);
-        return null;
-        //        return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
+        return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
     }
 
     public static Task GetAndUpdate<T>(this IDocumentSession documentSession, Guid id, int version,
