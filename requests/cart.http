@@ -1,5 +1,10 @@
 ### Create cart
-POST http://localhost:5095/cart/1
+POST http://localhost:5095/cart/
+Content-Type: application/json
+
+{
+    "cartId": "87dee802-c862-4069-936c-f411304645de"
+}
 
 ### Get sample cart
 GET http://localhost:5095/cart/1

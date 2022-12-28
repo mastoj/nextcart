@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Newtonsoft.Json;
 using NextCart.Api.Cart;
 
 namespace NextCart.Api.Tests;

@@ -31,7 +31,10 @@ public static class CartApi
     private static async Task<Results<Created<CartDto>, NotFound>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
         var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
-        var cart = new CartDto(result.CartId);
+        await documentSession.GetAndUpdate<Cart>(request.cartId, 1, cart => CartService.Handle(new CreateCart(request.cartId)), ct);
+        await documentSession.GetAndUpdate<Cart>(request.cartId, 1, cart => CartService.Handle(new CreateCart(request.cartId)), ct);
+        //await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
+        var cart = new CartDto(request.cartId);
         return TypedResults.Created($"/cart/{request.cartId}", cart);
     }
 

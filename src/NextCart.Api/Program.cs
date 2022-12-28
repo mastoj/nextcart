@@ -2,7 +2,9 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using NextCart.Api.Cart;
 using NextCart.Api.Infrastructure;
+using dotenv.net;
 
+DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMarten();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));

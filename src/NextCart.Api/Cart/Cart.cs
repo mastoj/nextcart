@@ -6,7 +6,7 @@ public record CreateCart(Guid CartId);
 
 public record CartCreated(Guid CartId) : CartEvent;
 
-public record Cart(Guid CartId, int Version = 1)
+public record Cart(Guid Id, int Version = 1)
 {
-    public static Cart Create(Guid CartId) => new(CartId);
+    public static Cart Create(CartCreated created) => new(created.CartId);
 }
