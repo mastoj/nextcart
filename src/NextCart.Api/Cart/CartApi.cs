@@ -29,18 +29,11 @@ public static class CartApi
         return group;
     }
 
-    private static async Task<Results<Created<CartDto>, BadRequest>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
+    private static async Task<Created<CartDto>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
-        try
-        {
-            var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
-            var cart = new CartDto(result.Id);
-            return TypedResults.Created($"/cart/{result.Id}", cart);
-        }
-        catch (ExistingStreamIdCollisionException)
-        {
-            return TypedResults.BadRequest();
-        }
+        var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
+        var cart = new CartDto(result.Id);
+        return TypedResults.Created($"/cart/{result.Id}", cart);
     }
 
     //     private static Results<Ok<CartDto>, NotFound> GetCart([FromBody] CreateCartRequest request)
