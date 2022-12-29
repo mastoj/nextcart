@@ -10,7 +10,7 @@ public class CreateCartTests : TestApi
     {
     }
 
-    private static CreateCartRequest ValidRequest() => new(Guid.NewGuid());
+    public static CreateCartRequest ValidRequest() => new(Guid.NewGuid());
 
     [Fact]
     public async void Valid_Cart_Returns_Created_Cart()
