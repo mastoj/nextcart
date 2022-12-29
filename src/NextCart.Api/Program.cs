@@ -4,7 +4,6 @@ using NextCart.Api.Cart;
 using NextCart.Api.Infrastructure;
 using dotenv.net;
 using Microsoft.AspNetCore.Diagnostics;
-using Marten.Exceptions;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
@@ -17,19 +16,31 @@ var app = builder.Build();
 app.MapGet("/", () => "Hello World!");
 
 app.MapCart();
-app.UseExceptionHandler(appBuilder =>
-{
-    appBuilder.Run(async context =>
+app.UseExceptionHandler(
+    new ExceptionHandlerOptions
     {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        var exceptionHandlerPathFeature =
-            context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error is ExistingStreamIdCollisionException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        }
+        AllowStatusCode404Response = true,
+        ExceptionHandler = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                var exceptionHandlerPathFeature =
+                    context.Features.Get<IExceptionHandlerPathFeature>();
+                if (exceptionHandlerPathFeature?.Error is DuplicateCartException)
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                }
+                else if (exceptionHandlerPathFeature?.Error is CartNotFoundException)
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                }
+
+                return Task.CompletedTask;
+            }
     });
-});
 
 app.Run();
 

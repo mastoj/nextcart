@@ -9,5 +9,13 @@ namespace NextCart.Api.Cart
                 new CartCreated(command.CartId)
             };
         }
+
+        public static CartEvent[] Handle(Cart cart, AddItem command)
+        {
+            return new[]
+            {
+                new ItemAdded(command.Product, cart.Total + command.Product.Amount * command.Product.Quantity)
+            };
+        }
     }
 }

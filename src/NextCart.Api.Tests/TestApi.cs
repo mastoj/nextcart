@@ -52,11 +52,13 @@ public class DatabaseCollection : ICollectionFixture<PostgreSQLFixture>
 public class TestApi : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
+    protected HttpClient Client;
 
     public TestApi(PostgreSQLFixture fixture)
     {
         Environment.SetEnvironmentVariable("MARTEN_SCHEMANAME", "cart");
         _connectionString = fixture.ConnectionString!;
+        Client = CreateClient();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
