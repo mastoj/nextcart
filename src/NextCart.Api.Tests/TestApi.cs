@@ -29,7 +29,6 @@ public class PostgreSQLFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await testcontainers.StartAsync();
-        Console.WriteLine("==> INITIALIZED DB: " + testcontainers.ConnectionString);
         Environment.SetEnvironmentVariable("MARTEN_SCHEMANAME", "cart");
         var ds = Marten.DocumentStore.For(options => options.ConfigureMarten(testcontainers.ConnectionString));
         ConnectionString = testcontainers.ConnectionString;
@@ -37,7 +36,6 @@ public class PostgreSQLFixture : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        Console.WriteLine("==> CLOSING DB");
         return testcontainers.DisposeAsync().AsTask();
     }
 }
@@ -56,7 +54,6 @@ public class TestApi : WebApplicationFactory<Program>
 
     public TestApi(PostgreSQLFixture fixture)
     {
-        Console.WriteLine("==> INITIALIZING API: " + fixture.ConnectionString);
         Environment.SetEnvironmentVariable("MARTEN_SCHEMANAME", "cart");
         _connectionString = fixture.ConnectionString!;
     }

@@ -17,19 +17,27 @@ public class CreateCartTests : TestApi, IClassFixture<PostgreSQLFixture>
     private static CreateCartRequest ValidRequest() => new(Guid.NewGuid());
 
     [Fact]
-    public async void Create_For_Valid_Cart_Returns_Created_Cart()
+    public async void Valid_Cart_Returns_Created_Cart()
     {
         var request = ValidRequest();
         var response = await _client.PostAsJsonAsync("/cart", request);
         response!.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
-    // [Fact]
-    // public async void Create_For_Valid_Cart_Returns_Locatin_Of_Cart()
-    // {
-    //     var request = ValidRequest();
-    //     var response = await _client.PostAsJsonAsync("/cart", request);
-    //     response!.StatusCode.Should().Be(HttpStatusCode.Created);
-    //     response!.Headers.First(y => y.Key == "Location").Value.First().Should().Be($"/cart/{request.cartId}");
-    // }
+    [Fact]
+    public async void Valid_Cart_Returns_Locatoin_Of_Cart()
+    {
+        var request = ValidRequest();
+        var response = await _client.PostAsJsonAsync("/cart", request);
+        response!.Headers.First(y => y.Key == "Location").Value.First().Should().Be($"/cart/{request.cartId}");
+    }
+
+    [Fact]
+    public async void Duplicate_Cart_Id_Returns_Bad_Request()
+    {
+        var request = ValidRequest();
+        _ = await _client.PostAsJsonAsync("/cart", request);
+        var response = await _client.PostAsJsonAsync("/cart", request);
+        response!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

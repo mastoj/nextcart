@@ -32,12 +32,9 @@ public static class MartenExtensions
     public static async Task<T> Add<T>(this IDocumentSession documentSession, Guid id, Func<object[]> handle, CancellationToken ct)
         where T : class
     {
-        Console.WriteLine("==> Saving: " + id);
         var events = handle();
-        events.ToList().ForEach(e => Console.WriteLine("==> Event: " + e));
         documentSession.Events.StartStream<T>(id, events);
         await documentSession.SaveChangesAsync(token: ct);
-        Console.WriteLine("==> Saved: " + id);
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
     }
 

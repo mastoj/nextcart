@@ -1,4 +1,5 @@
 using Marten;
+using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using NextCart.Api.Infrastructure;
@@ -28,14 +29,18 @@ public static class CartApi
         return group;
     }
 
-    private static async Task<Results<Created<CartDto>, NotFound>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
+    private static async Task<Results<Created<CartDto>, BadRequest>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
-        var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
-        await documentSession.GetAndUpdate<Cart>(request.cartId, 1, cart => CartService.Handle(new CreateCart(request.cartId)), ct);
-        await documentSession.GetAndUpdate<Cart>(request.cartId, 1, cart => CartService.Handle(new CreateCart(request.cartId)), ct);
-        //await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
-        var cart = new CartDto(request.cartId);
-        return TypedResults.Created($"/cart/{request.cartId}", cart);
+        try
+        {
+            var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
+            var cart = new CartDto(result.Id);
+            return TypedResults.Created($"/cart/{result.Id}", cart);
+        }
+        catch (ExistingStreamIdCollisionException)
+        {
+            return TypedResults.BadRequest();
+        }
     }
 
     //     private static Results<Ok<CartDto>, NotFound> GetCart([FromBody] CreateCartRequest request)
