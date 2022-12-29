@@ -40,14 +40,15 @@ public class PostgreSQLFixture : IAsyncLifetime
     }
 }
 
-// [CollectionDefinition("Postgres collection")]
-// public class DatabaseCollection : ICollectionFixture<PostgreSQLFixture>
-// {
-//     // This class has no code, and is never created. Its purpose is simply
-//     // to be the place to apply [CollectionDefinition] and all the
-//     // ICollectionFixture<> interfaces.
-// }
+[CollectionDefinition("Postgres collection")]
+public class DatabaseCollection : ICollectionFixture<PostgreSQLFixture>
+{
+    // This class has no code, and is never created. Its purpose is simply
+    // to be the place to apply [CollectionDefinition] and all the
+    // ICollectionFixture<> interfaces.
+}
 
+[Collection("Postgres collection")]
 public class TestApi : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
@@ -64,6 +65,5 @@ public class TestApi : WebApplicationFactory<Program>
         {
             services.AddMarten(_connectionString);
         });
-        // base.ConfigureWebHost(builder);
     }
 }

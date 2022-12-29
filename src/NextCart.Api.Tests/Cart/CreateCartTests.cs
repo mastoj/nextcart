@@ -5,7 +5,7 @@ using NextCart.Api.Cart;
 
 namespace NextCart.Api.Tests;
 
-public class CreateCartTests : TestApi, IClassFixture<PostgreSQLFixture>
+public class CreateCartTests : TestApi
 {
     private HttpClient _client;
 
