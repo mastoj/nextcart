@@ -3,7 +3,7 @@ POST http://localhost:5095/cart/
 Content-Type: application/json
 
 {
-    "cartId": "87dee802-c862-4069-936c-f411304645de"
+    "cartId": "87dee802-c862-4069-936c-f41130460000"
 }
 
 ### Get sample cart

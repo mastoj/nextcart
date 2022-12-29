@@ -6,7 +6,11 @@ using NextCart.Api.Infrastructure;
 
 namespace NextCart.Api.Cart;
 
-public record CartDto(Guid cartId);
+public record ProductDto(string productId, float amount, string currency, int quantity);
+public record CartDto(
+    Guid cartId,
+    IEnumerable<ProductDto>? items = null,
+    float total = 0);
 
 #region requests
 public record CreateCartRequest(Guid cartId);

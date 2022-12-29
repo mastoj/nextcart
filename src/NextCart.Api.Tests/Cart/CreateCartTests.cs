@@ -25,11 +25,20 @@ public class CreateCartTests : TestApi
     }
 
     [Fact]
-    public async void Valid_Cart_Returns_Locatoin_Of_Cart()
+    public async void Valid_Cart_Returns_Location_Of_Cart()
     {
         var request = ValidRequest();
         var response = await _client.PostAsJsonAsync("/cart", request);
         response!.Headers.First(y => y.Key == "Location").Value.First().Should().Be($"/cart/{request.cartId}");
+    }
+
+    [Fact]
+    public async void Valid_Cart_Returns_Empty_Cart()
+    {
+        var request = ValidRequest();
+        var response = await _client.PostAsJsonAsync("/cart", request);
+        var actualCart = await response.Content.ReadFromJsonAsync<CartDto>();
+        actualCart.Should().Be(new CartDto(request.cartId));
     }
 
     [Fact]
