@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option csharp_namespace = "NextCart.Api.Cart";
+
+// import "google/protobuf/empty.proto";
+
+message CreateCart2 {
+    string id = 1;
+}
+  
+message Cart2 {
+    string id = 1;
+}
+  

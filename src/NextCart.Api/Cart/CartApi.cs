@@ -3,6 +3,8 @@ using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using NextCart.Api.Infrastructure;
+using Proto;
+using Proto.Cluster;
 
 namespace NextCart.Api.Cart;
 
@@ -43,10 +45,12 @@ public static class CartApi
         return group;
     }
 
-    private static async Task<Created<CartDto>> CreateCart(IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
+    private static async Task<Created<CartDto>> CreateCart(ActorSystem actorSystem, IDocumentSession documentSession, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
         try
         {
+            var someResult = await actorSystem.Cluster().GetCartGrain(request.cartId.ToString()).Create(new CreateCart2 { Id = request.cartId.ToString() }, ct);
+            Console.WriteLine($"====> someResult: {someResult}");
             var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
             var cart = new CartDto(result.Id);
             return TypedResults.Created($"/cart/{result.Id}", cart);
