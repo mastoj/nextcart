@@ -10,7 +10,7 @@ public class CreateCartTests : TestApi
     {
     }
 
-    public static CreateCartRequest ValidRequest() => new(Guid.NewGuid());
+    public static CreateCartRequest ValidRequest() => new(Guid.NewGuid().ToString());
 
     [Fact]
     public async void Valid_Cart_Returns_Created_Cart()
@@ -34,7 +34,7 @@ public class CreateCartTests : TestApi
         var request = ValidRequest();
         var response = await Client.PostAsJsonAsync("/cart", request);
         var actualCart = await response.Content.ReadFromJsonAsync<CartDto>();
-        actualCart.Should().Be(new CartDto(request.cartId));
+        actualCart.Should().Be(new CartDto { Id = request.cartId });
     }
 
     [Fact]

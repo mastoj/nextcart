@@ -1,22 +1,49 @@
+using Marten;
 using Proto;
 using Proto.Cluster;
+using NextCart.Api.Infrastructure;
 
 namespace NextCart.Api.Cart;
 
 public class CartGrain : CartGrainBase
 {
-    private readonly ClusterIdentity _clusterIdentity;
+    private readonly IDocumentStore _documentStore;
+    private CartDto _cart;
 
-    public CartGrain(IContext context, ClusterIdentity clusterIdentity) : base(context)
+    public CartGrain(IContext context, IDocumentStore documentStore) : base(context)
     {
-        _clusterIdentity = clusterIdentity;
+        Console.WriteLine("====> CartGrain");
+        _cart = new CartDto();
+        _documentStore = documentStore;
     }
 
-    public override Task<Cart2> Create(CreateCart2 request)
+    public CartGrain(IContext context) : base(context)
     {
-        return Task.FromResult(new Cart2
+        Console.WriteLine("====> CartGrain");
+        _cart = new CartDto();
+    }
+
+    public override Task OnStarted()
+    {
+        Console.WriteLine("====> OnStarted");
+        return base.OnStarted();
+    }
+
+    public override Task<CartDto> Create(CreateCart request)
+    {
+        Console.WriteLine("====> CreateCart");
+        var result = _documentStore.Add<Cart>(request.Id, () => CartService.Handle(new CreateCart { Id = request.Id }), Context.CancellationToken).Result;
+        _cart = ToCartDto(result!);
+        _cart = new CartDto { Id = request.Id };
+        Console.WriteLine("====> CreatedCart");
+        return Task.FromResult(_cart);
+    }
+
+    private static CartDto ToCartDto(Cart cart)
+    {
+        return new CartDto
         {
-            Id = request.Id,
-        });
+            Id = cart.Id,
+        };
     }
 }

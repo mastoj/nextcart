@@ -29,19 +29,22 @@ public static class MartenExtensions
         options.Events.DatabaseSchemaName = Environment.GetEnvironmentVariable("MARTEN_SCHEMANAME")!;
     }
 
-    public static async Task<T> Add<T>(this IDocumentSession documentSession, Guid id, Func<object[]> handle, CancellationToken ct)
+    public static async Task<T> Add<T>(this IDocumentStore documentStore, string id, Func<object[]> handle, CancellationToken ct)
         where T : class
     {
         var events = handle();
-        documentSession.Events.StartStream<T>(id, events);
+        using var documentSession = documentStore.LightweightSession();
+        var guidId = Guid.Parse(id);
+        documentSession.Events.StartStream<T>(guidId, events);
         await documentSession.SaveChangesAsync(token: ct);
-        return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
+        return (await documentSession.Events.AggregateStreamAsync<T>(guidId, token: ct))!;
     }
 
-    public static async Task<T> GetAndUpdate<T>(this IDocumentSession documentSession, Guid id, int version,
+    public static async Task<T> GetAndUpdate<T>(this IDocumentStore documentStore, Guid id, int version,
         Func<T, object[]> handle, CancellationToken ct)
         where T : class
     {
+        using var documentSession = documentStore.LightweightSession();
         await documentSession.Events.WriteToAggregate<T>(id, version, stream =>
             stream.AppendMany(handle(stream.Aggregate)), ct);
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;

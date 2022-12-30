@@ -6,7 +6,7 @@ namespace NextCart.Api.Cart
         {
             return new[]
             {
-                new CartCreated(command.CartId)
+                new CartCreated(command.Id)
             };
         }
 

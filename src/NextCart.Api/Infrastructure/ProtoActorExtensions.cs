@@ -1,3 +1,4 @@
+using Marten;
 using NextCart.Api.Cart;
 using Proto;
 using Proto.Cluster;
@@ -25,7 +26,6 @@ public static class ProtoActorExtensions
                 .BindToLocalhost();
 
             // cluster configuration
-
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "ProtoClusterTutorial",
@@ -34,7 +34,9 @@ public static class ProtoActorExtensions
                 )
                 .WithClusterKind(
                     kind: CartGrainActor.Kind,
-                    prop: Props.FromProducer(() => new CartGrainActor((context, clusterIdentity) => new CartGrain(context, clusterIdentity)))
+                    prop: Props.FromProducer(() =>
+                    new CartGrainActor((context, clusterIdentity) =>
+                        ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
                 );
 
             // create the actor system
