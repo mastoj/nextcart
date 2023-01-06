@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-option csharp_namespace = "NextCart.Api.Cart";
-
-import "CartMessages.proto";
-
-service CartGrain {
-  rpc Create (CreateCart) returns (CartDto);
-}

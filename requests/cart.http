@@ -1,13 +1,15 @@
+@cartId = 87dee802-c862-4069-936c-f41130460002
+
 ### Create cart
 POST http://localhost:5095/cart/
 Content-Type: application/json
 
 {
-    "cartId": "87dee802-c862-4069-936c-f41130460000"
+    "cartId": "{{cartId}}"
 }
 
 ### Get sample cart
-GET http://localhost:5095/cart/1
+GET http://localhost:5095/cart/{{cartId}}
 
 ### Get missing cart
 GET http://localhost:5095/cart/2

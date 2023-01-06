@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Cart/CartMessages.proto" />
-    <ProtoGrain Include="Cart/CartGrain.proto" AdditionalImportDirs="./Cart" />
+    <Protobuf Include="Cart/Proto/CartMessages.proto" />
+    <ProtoGrain Include="Cart/Proto/CartGrain.proto" AdditionalImportDirs="./Cart/Proto" />
   </ItemGroup>
 </Project>

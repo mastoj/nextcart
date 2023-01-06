@@ -1,5 +1,6 @@
 using Marten;
 using NextCart.Api.Cart;
+using NextCart.Api.Cart.Proto;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Partition;

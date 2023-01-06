@@ -1,26 +1,12 @@
-using Marten;
+using System.Text;
 using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using NextCart.Api.Infrastructure;
+using NextCart.Api.Cart.Proto;
 using Proto;
 using Proto.Cluster;
 
 namespace NextCart.Api.Cart;
-
-// public record ProductDto(
-//     string productId,
-//     string name,
-//     string url,
-//     string mainImage,
-//     float amount,
-//     string currency,
-//     int quantity);
-
-// public record CartDto(
-//     Guid cartId,
-//     IEnumerable<ProductDto>? items = null,
-//     float total = 0);
 
 #region requests
 public record CreateCartRequest(string cartId);
@@ -32,15 +18,21 @@ public static class CartApi
     public static RouteGroupBuilder MapCart(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/cart");
+        group.AddEndpointFilter(async (invocationContext, next) =>
+        {
+            var body = await invocationContext.HttpContext.Request.BodyReader.ReadAsync();
+            var bodyString = Encoding.UTF8.GetString(body.Buffer);
+            Console.WriteLine($"====> Request: {invocationContext.HttpContext.Request.Path} {invocationContext.HttpContext.Request.Method} {bodyString}");
+            return await next(invocationContext);
+        });
 
         group.MapPost("/", CreateCart);
-        // group.MapPost("/{id}/items", AddItem);
-        // group.MapGet("/{id}", GetCart);
-        // group.MapPost("/{id}/clear", ClearCart);
-
-        // group.MapPost("/{id}/items", AddItem);
-        // group.MapPut("/{id}/items/{itemId}", UpdateItem);
-        // group.MapDelete("/{id}/items/{itemId}", RemoveItem);
+        group.MapGet("/{id}", GetCart);
+        group.MapPost("/{id}/items", AddItem);
+        group.MapPost("/{id}/clear", ClearCart);
+        group.MapPost("/{id}/items/{productId}/increasequantity", IncreaseQuantity);
+        group.MapPost("/{id}/items/{productId}/decreasequantity", DecreaseQuantity);
+        group.MapDelete("/{id}/items/{productId}", RemoveItem);
 
         return group;
     }
@@ -49,15 +41,11 @@ public static class CartApi
     {
         try
         {
-            Console.WriteLine($"====> Getting grain");
+            Console.WriteLine("====> CreateCart: " + request.cartId);
             var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
-            Console.WriteLine("====> Got grain" + grain);
             var result = await grain.
-                    Create(new CreateCart { Id = request.cartId }, ct);
-            Console.WriteLine($"====> someResult: {result}");
-            // var result = await documentSession.Add<Cart>(request.cartId, () => CartService.Handle(new CreateCart(request.cartId)), ct);
-            // var cart = new CartDto(result.Id);
-            return TypedResults.Created($"/cart/{result.Id}", result);
+                    Create(new Proto.CreateCart(), ct);
+            return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
         }
         catch (ExistingStreamIdCollisionException)
         {
@@ -70,45 +58,93 @@ public static class CartApi
         }
     }
 
-    // private static async Task<Ok<CartDto>> AddItem(IDocumentSession documentSession, [FromRoute] Guid id, [FromBody] AddItemRequest request, CancellationToken ct)
-    // {
-    //     try
-    //     {
-    //         var product = new Product(request.productId, "name", "url", "mainImage", 1, "EUR", request.quantity);
-    //         var result = await documentSession.GetAndUpdate<Cart>(id, 1, cart => CartService.Handle(cart, new AddItem(product)), ct);
-    //         // var cart = new CartDto(result.Id, result.Items?.Select(x => new ProductDto(x.ProductId, x.Name, x.Url, x.MainImage, x.Amount, x.Currency, x.Quantity)), result.Total);
-    //         // return TypedResults.Ok(cart);
-    //         return TypedResults.Ok(new CartDto { Id = result.Id });
-    //     }
-    //     catch (ConcurrencyException ex)
-    //     {
-    //         throw new CartNotFoundException(id);
-    //     }
-    // }
+    private static async Task<Ok<CartDto>> GetCart(ActorSystem actorSystem, [FromRoute] string id, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.Get(new Proto.GetCart(), ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 
-    //     private static Results<Ok<CartDto>, NotFound> GetCart([FromBody] CreateCartRequest request)
-    //     {
-    //         var cart = new Cart();
-    //         return TypedResults.Ok(cart);
-    //     }
+    private static async Task<Ok<CartDto>> AddItem(ActorSystem actorSystem, [FromRoute] string id, [FromBody] AddItemRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.AddItem(new Proto.AddItem { ProductId = request.productId }, ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 
-    //     private static async Task ClearCart(HttpContext context)
-    //     {
-    //         await context.Response.WriteAsJsonAsync(new Cart());
-    //     }
+    private static async Task<Ok<CartDto>> IncreaseQuantity(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.IncreaseQuantity(new Proto.IncreaseQuantity { ProductId = productId }, ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 
-    //     private static Results<Ok<string>, NotFound> AddItem()
-    //     {
-    //         return TypedResults.Ok("Hello");
-    //     }
+    private static async Task<Ok<CartDto>> DecreaseQuantity(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.DecreaseQuantity(new Proto.DecreaseQuantity { ProductId = productId }, ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 
-    //     private static Results<Ok<string>, NotFound> UpdateItem()
-    //     {
-    //         return TypedResults.Ok("Hello");
-    //     }
+    private static async Task<Ok<CartDto>> RemoveItem(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.RemoveItem(new Proto.RemoveItem { ProductId = productId }, ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 
-    //     private static Results<Ok<string>, NotFound> RemoveItem()
-    //     {
-    //         return TypedResults.Ok("Hello");
-    //     }
+    private static async Task<Ok<CartDto>> ClearCart(ActorSystem actorSystem, [FromRoute] string id, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await grain.Clear(new Proto.Clear(), ct);
+            return TypedResults.Ok(result.Cart);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
+    }
 }

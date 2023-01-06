@@ -1,0 +1,29 @@
+using System.Runtime.Serialization;
+
+namespace NextCart.Api.Cart
+{
+    public enum ErrorCode
+    {
+        InvalidProductId = 1001
+    }
+
+    [Serializable]
+    public class NextCartExceptions : Exception
+    {
+        public ErrorCode ErrorCode { get; private set; }
+        public NextCartExceptions(ErrorCode errorCode, string message) : base(message)
+        {
+            ErrorCode = errorCode;
+        }
+
+        public static InvalidProductIdException InvalidProductId(string productId, string cartId) => new(productId, cartId, ErrorCode.InvalidProductId);
+    }
+
+    [Serializable]
+    public class InvalidProductIdException : NextCartExceptions
+    {
+        public InvalidProductIdException(string productId, string cartId, ErrorCode errorCode) : base(errorCode, $"The product id {productId} doesn't exist in cart {cartId}")
+        {
+        }
+    }
+}
