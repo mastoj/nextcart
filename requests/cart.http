@@ -1,4 +1,5 @@
-@cartId = 87dee802-c862-4069-936c-f41130460002
+@cartId = 87dee802-c862-4069-936c-f41130460005
+@productId = 00000000-c862-4069-936c-f41130460003
 
 ### Create cart
 POST http://localhost:5095/cart/
@@ -11,17 +12,22 @@ Content-Type: application/json
 ### Get sample cart
 GET http://localhost:5095/cart/{{cartId}}
 
-### Get missing cart
-GET http://localhost:5095/cart/2
-
-### Clear cart
-POST http://localhost:5095/cart/1/clear
-
 ### Add item to cart
-POST http://localhost:5095/cart/1/items
+POST http://localhost:5095/cart/{{cartId}}/items
+Content-Type: application/json
 
-### Update item 
-PUT http://localhost:5095/cart/1/items/itemid
+{
+    "productId": "{{productId}}"
+} 
+
+### Increase quantity
+POST http://localhost:5095/cart/{{cartId}}/items/{{productId}}/increasequantity
+
+### Decrease quantity
+POST http://localhost:5095/cart/{{cartId}}/items/{{productId}}/decreasequantity
 
 ### Remove item from cart
-DELETE http://localhost:5095/cart/1/items/itemid
+DELETE http://localhost:5095/cart/{{cartId}}/items/{{productId}}
+
+### Clear cart
+POST http://localhost:5095/cart/{{cartId}}/clear

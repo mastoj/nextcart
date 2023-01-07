@@ -39,13 +39,24 @@ public static class MartenExtensions
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
     }
 
+    public static async Task<T> Update<T>(this IDocumentStore documentStore, Guid id, int version, object[] events, CancellationToken ct)
+        where T : class
+    {
+        using var documentSession = documentStore.OpenSession();
+        var expectedVersion = version + events.Length;
+        documentSession.Events.Append(id, expectedVersion, events);
+        await documentSession.SaveChangesAsync(token: ct);
+        return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
+    }
+
     public static async Task<T> GetAndUpdate<T>(this IDocumentStore documentStore, Guid id, int version,
         Func<T, object[]> handle, CancellationToken ct)
         where T : class
     {
-        using var documentSession = documentStore.LightweightSession();
+        using var documentSession = documentStore.OpenSession();
         await documentSession.Events.WriteToAggregate<T>(id, version, stream =>
             stream.AppendMany(handle(stream.Aggregate)), ct);
+        await documentSession.SaveChangesAsync(token: ct);
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
     }
 }

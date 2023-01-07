@@ -1,6 +1,69 @@
-import http from 'k6/http';
+import uuid from './uuid.js';
 import { sleep } from 'k6';
+import http from 'k6/http';
 
 export default function () {
-    http.get('http://localhost:5095/cart/87dee802-c862-4069-936c-f41130460002');
+    const cartId = uuid();
+    // Create cart through POST request
+    const createRequest = {
+        cartId: cartId
+    }
+    const params = {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+    http.post('http://localhost:5095/cart', JSON.stringify(createRequest), params);
+    // Get cart through GET request
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
+    const productId = uuid();
+    const addItemRequest = {
+        productId: productId
+    };
+    const response = http.post(`http://localhost:5095/cart/${cartId}/items`, JSON.stringify(addItemRequest), params);
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
+    //    sleep(1);
+    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/increasequantity`, null, params);
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
+    //    sleep(1);
+    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/increasequantity`, null, params);
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
+    //    sleep(1);
+    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/decreasequantity`, null, params);
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+    http.get('http://localhost:5095/cart/' + cartId);
+
+    //    sleep(1);
+    http.del(`http://localhost:5095/cart/${cartId}/items/${productId}`, null, params);
+    //    sleep(1);
+    http.get('http://localhost:5095/cart/' + cartId);
 }

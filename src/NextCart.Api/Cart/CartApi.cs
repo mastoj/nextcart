@@ -10,7 +10,7 @@ namespace NextCart.Api.Cart;
 
 #region requests
 public record CreateCartRequest(string cartId);
-public record AddItemRequest(string productId, int quantity);
+public record AddItemRequest(string productId);
 #endregion
 
 public static class CartApi
@@ -18,14 +18,6 @@ public static class CartApi
     public static RouteGroupBuilder MapCart(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/cart");
-        group.AddEndpointFilter(async (invocationContext, next) =>
-        {
-            var body = await invocationContext.HttpContext.Request.BodyReader.ReadAsync();
-            var bodyString = Encoding.UTF8.GetString(body.Buffer);
-            Console.WriteLine($"====> Request: {invocationContext.HttpContext.Request.Path} {invocationContext.HttpContext.Request.Method} {bodyString}");
-            return await next(invocationContext);
-        });
-
         group.MapPost("/", CreateCart);
         group.MapGet("/{id}", GetCart);
         group.MapPost("/{id}/items", AddItem);
@@ -44,7 +36,7 @@ public static class CartApi
             Console.WriteLine("====> CreateCart: " + request.cartId);
             var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
             var result = await grain.
-                    Create(new Proto.CreateCart(), ct);
+                    Create(new Proto.CreateCart { Id = request.cartId }, ct);
             return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
         }
         catch (ExistingStreamIdCollisionException)

@@ -33,27 +33,27 @@ public record Cart(
     int Version = 1)
 {
     public static Cart Create(CartCreated created) => new(created.CartId);
-    public static Cart Apply(Cart cart, ItemAdded added) => cart with
+    public Cart Apply(ItemAdded added) => this with
     {
-        Items = cart.Items?.Append(added.Item) ?? new[] { added.Item },
+        Items = Items?.Append(added.Item) ?? new[] { added.Item },
         Total = added.NewTotal
     };
-    public static Cart Apply(Cart cart, ItemQuantityIncreased increased) => cart with
+    public Cart Apply(ItemQuantityIncreased increased) => this with
     {
-        Items = cart.Items?.Select(x => x.Product.ProductId == increased.Item.Product.ProductId ? increased.Item : x),
+        Items = Items?.Select(x => x.Product.ProductId == increased.Item.Product.ProductId ? increased.Item : x),
         Total = increased.NewTotal
     };
-    public static Cart Apply(Cart cart, ItemQuantityDecreased decreased) => cart with
+    public Cart Apply(ItemQuantityDecreased decreased) => this with
     {
-        Items = cart.Items?.Select(x => x.Product.ProductId == decreased.Item.Product.ProductId ? decreased.Item : x),
+        Items = Items?.Select(x => x.Product.ProductId == decreased.Item.Product.ProductId ? decreased.Item : x),
         Total = decreased.NewTotal
     };
-    public static Cart Apply(Cart cart, ItemRemoved removed) => cart with
+    public Cart Apply(ItemRemoved removed) => this with
     {
-        Items = cart.Items?.Where(x => x.Product.ProductId != removed.ProductId),
+        Items = Items?.Where(x => x.Product.ProductId != removed.ProductId),
         Total = removed.NewTotal
     };
-    public static Cart Apply(Cart cart, CartCleared cleared) => cart with
+    public Cart Apply(CartCleared _) => this with
     {
         Items = new List<Item> { },
         Total = 0
