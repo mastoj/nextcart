@@ -2,9 +2,9 @@ namespace NextCart.Api.Cart;
 
 public static class DomainMapper
 {
-    public static CreateCart ToDomain(this Proto.CreateCart dto) => new(dto.Id);
+    public static CreateCart ToDomain(this Proto.CreateCart dto) => new(Guid.Parse(dto.Id));
     public static AddItem ToDomain(this Proto.AddItem dto, Func<string, Product> GetProduct) => new(GetProduct(dto.ProductId));
-    public static Cart ToDomain(this Proto.CartDto dto) => new(dto.Id, dto.Items?.Select(x => x.ToDomain()), dto.Total, dto.Version);
+    public static Cart ToDomain(this Proto.CartDto dto) => new(Guid.Parse(dto.Id), dto.Items?.Select(x => x.ToDomain()), dto.Total, dto.Version);
     public static Item ToDomain(this Proto.ItemDto dto) => new(dto.Product.ToDomain(), dto.ItemTotal, dto.Quantity);
     public static Product ToDomain(this Proto.ProductDto dto) => new(dto.ProductId, dto.Name, dto.Url, dto.MainImage, dto.Amount, dto.Currency);
     public static RemoveItem ToDomain(this Proto.RemoveItem dto) => new(dto.ProductId);
@@ -16,7 +16,7 @@ public static class DomainMapper
     {
         var dto = new Proto.CartDto()
         {
-            Id = cart.Id,
+            Id = cart.Id.ToString(),
             // Items = cart.Items?.Select(x => x.ToDto()) ?? new List<Proto.ItemDto> { },
             Total = cart.Total,
             Version = cart.Version

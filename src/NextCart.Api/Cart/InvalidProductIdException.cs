@@ -16,13 +16,13 @@ namespace NextCart.Api.Cart
             ErrorCode = errorCode;
         }
 
-        public static InvalidProductIdException InvalidProductId(string productId, string cartId) => new(productId, cartId, ErrorCode.InvalidProductId);
+        public static InvalidProductIdException InvalidProductId(string productId, Guid cartId) => new(productId, cartId, ErrorCode.InvalidProductId);
     }
 
     [Serializable]
     public class InvalidProductIdException : NextCartExceptions
     {
-        public InvalidProductIdException(string productId, string cartId, ErrorCode errorCode) : base(errorCode, $"The product id {productId} doesn't exist in cart {cartId}")
+        public InvalidProductIdException(string productId, Guid cartId, ErrorCode errorCode) : base(errorCode, $"The product id {productId} doesn't exist in cart {cartId}")
         {
         }
     }

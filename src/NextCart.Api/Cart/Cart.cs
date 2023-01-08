@@ -12,14 +12,14 @@ public record Item(Product Product, float ItemTotal, int Quantity);
 public interface CartEvent { }
 
 // public record CreateCart(Guid CartId);
-public record CreateCart(string Id);
+public record CreateCart(Guid Id);
 public record AddItem(Product Product);
 public record IncreaseItemQuantity(string ProductId);
 public record RemoveItem(string ProductId);
 public record DecreaseItemQuantity(string ProductId);
 public record ClearCart();
 
-public record CartCreated(string CartId) : CartEvent;
+public record CartCreated(Guid CartId) : CartEvent;
 public record ItemAdded(Item Item, float NewTotal) : CartEvent;
 public record ItemQuantityIncreased(Item Item, float NewTotal) : CartEvent;
 public record ItemQuantityDecreased(Item Item, float NewTotal) : CartEvent;
@@ -27,7 +27,7 @@ public record ItemRemoved(string ProductId, float NewTotal) : CartEvent;
 public record CartCleared() : CartEvent;
 
 public record Cart(
-    string Id,
+    Guid Id,
     IEnumerable<Item>? Items = null,
     float Total = 0,
     int Version = 1)

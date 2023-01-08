@@ -34,7 +34,7 @@ public static class MartenExtensions
         where T : class
     {
         var events = handle();
-        using var documentSession = documentStore.LightweightSession();
+        using var documentSession = documentStore.OpenSession();
         documentSession.Events.StartStream<T>(id, events);
         await documentSession.SaveChangesAsync(token: ct);
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
