@@ -13,9 +13,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Marten" Version="6.0.0-alpha.6" />
+    <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.2.7" />
     <PackageReference Include="Proto.Actor" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster.CodeGen" Version="1.0.0" />
+    <PackageReference Include="Proto.Cluster.Kubernetes" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster.TestProvider" Version="1.0.0" />
   </ItemGroup>
 
