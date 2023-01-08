@@ -54,6 +54,6 @@ public static class ProtoActorExtensions
     {
         //Configure ProtoActor to use Console logger
         Proto.Log.SetLoggerFactory(
-            LoggerFactory.Create(l => l.AddConsole().SetMinimumLevel(LogLevel.Error)));
+            LoggerFactory.Create(l => l.AddConsole().SetMinimumLevel(LogLevel.Warning)));
     }
 }
