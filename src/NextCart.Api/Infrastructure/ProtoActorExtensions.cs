@@ -29,7 +29,7 @@ public static class ProtoActorExtensions
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
-                    clusterName: "ProtoClusterTutorial",
+                    clusterName: "NextCart",
                     clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
                     identityLookup: new PartitionIdentityLookup()
                 )
@@ -47,5 +47,13 @@ public static class ProtoActorExtensions
                 .WithRemote(remoteConfig)
                 .WithCluster(clusterConfig);
         });
+        SetupLogger();
+    }
+
+    public static void SetupLogger()
+    {
+        //Configure ProtoActor to use Console logger
+        Proto.Log.SetLoggerFactory(
+            LoggerFactory.Create(l => l.AddConsole().SetMinimumLevel(LogLevel.Error)));
     }
 }

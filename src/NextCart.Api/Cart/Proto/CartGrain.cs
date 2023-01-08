@@ -18,17 +18,29 @@ public class CartGrain : CartGrainBase
 
     public CartGrain(IContext context, IDocumentStore documentStore) : base(context)
     {
+        Console.WriteLine("==> Creating grain");
         _cart = new CartDto();
         _cartId = Guid.Parse(context.ClusterIdentity()!.Identity);
         _documentStore = documentStore;
+        Console.WriteLine("==> Created grain");
     }
 
     public override Task OnStarted()
     {
-        using var dbSession = _documentStore.LightweightSession();
-        var cart = dbSession.Events.AggregateStream<Cart>(_cartId);
-        _cart = cart?.ToDto();
-        Console.WriteLine("==> OnStarted: " + _cart);
+        try
+        {
+            Console.WriteLine("==> Starting: " + _cart);
+            using var dbSession = _documentStore.LightweightSession();
+            var cart = dbSession.Events.AggregateStream<Cart>(_cartId);
+            _cart = cart?.ToDto();
+            Console.WriteLine("==> OnStarted: " + _cart);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("==> Exception: " + ex);
+            throw;
+        }
         return base.OnStarted();
     }
 
