@@ -50,8 +50,8 @@ public class CartGrain : CartGrainBase
     public override Task<CartResponse> AddItem(AddItem request)
     {
         Console.WriteLine("====> AddItem: " + _cart.Version);
-        var result = _documentStore.Update<Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain(GetProduct)), Context.CancellationToken).Result;
-        // var result = _documentStore.GetAndUpdate<Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain(GetProduct)), Context.CancellationToken).Result;
+        // var result = _documentStore.Update<Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain(GetProduct)), Context.CancellationToken).Result;
+        var result = _documentStore.GetAndUpdate<Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain(GetProduct)), Context.CancellationToken).Result;
         _cart = result!.ToDto();
         var response = new CartResponse { Cart = _cart };
         return Task.FromResult(response);
