@@ -8,4 +8,7 @@ build-container: ## Build the container
 	dotnet publish src/NextCart.Api --os linux --arch x64 -c Release -p:PublishProfile=DefaultContainer
 
 docker-run: ## Run the container
-	docker run -it -p 5000:80 --rm --env-file src/NextCart.Api/.env.local --name nextcart-api nextcart-api:1.0.0
+	docker run -it -p 5000:80 --rm --env-file src/NextCart.Api/.env.docker --add-host host.docker.internal:host-gateway --name nextcart-api nextcart-api:1.0.0
+
+local-run: ## Run the application locally
+	dotnet run --project src/NextCart.Api/NextCart.Api.csproj

@@ -34,6 +34,7 @@ public class CartGrain : CartGrainBase
 
     public override Task<CartResponse> Create(CreateCart request)
     {
+        Console.WriteLine("====> Grain: Create cart" + request);
         var result = _documentStore.Add<Cart>(_cartId, () => CartService.Handle(request.ToDomain()), Context.CancellationToken).Result;
         _cart = result!.ToDto();
         Console.WriteLine("====> CreatedCart" + _cart);

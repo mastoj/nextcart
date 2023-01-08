@@ -8,6 +8,7 @@ public static class MartenExtensions
     public static void AddMarten(this IServiceCollection services)
     {
         var connectionString = Environment.GetEnvironmentVariable("MARTEN_CONNECTIONSTRING")!;
+        Console.WriteLine("==> AddMarten: " + connectionString);
         services.AddMarten(connectionString);
     }
 

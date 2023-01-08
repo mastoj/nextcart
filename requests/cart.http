@@ -1,8 +1,12 @@
 @cartId = 87dee802-c862-4069-936c-f41130460005
 @productId = 00000000-c862-4069-936c-f41130460003
+@dockerhost = http://localhost:5000
+@localhost = http://localhost:5095
+@host = {{localhost}}
+
 
 ### Create cart
-POST http://localhost:5095/cart/
+POST {{host}}/cart/
 Content-Type: application/json
 
 {
@@ -10,10 +14,10 @@ Content-Type: application/json
 }
 
 ### Get sample cart
-GET http://localhost:5095/cart/{{cartId}}
+GET {{host}}/cart/{{cartId}}
 
 ### Add item to cart
-POST http://localhost:5095/cart/{{cartId}}/items
+POST {{host}}/cart/{{cartId}}/items
 Content-Type: application/json
 
 {
@@ -21,13 +25,13 @@ Content-Type: application/json
 } 
 
 ### Increase quantity
-POST http://localhost:5095/cart/{{cartId}}/items/{{productId}}/increasequantity
+POST {{host}}/cart/{{cartId}}/items/{{productId}}/increasequantity
 
 ### Decrease quantity
-POST http://localhost:5095/cart/{{cartId}}/items/{{productId}}/decreasequantity
+POST {{host}}/cart/{{cartId}}/items/{{productId}}/decreasequantity
 
 ### Remove item from cart
-DELETE http://localhost:5095/cart/{{cartId}}/items/{{productId}}
+DELETE {{host}}/cart/{{cartId}}/items/{{productId}}
 
 ### Clear cart
-POST http://localhost:5095/cart/{{cartId}}/clear
+POST {{host}}/cart/{{cartId}}/clear
