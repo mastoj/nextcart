@@ -2,6 +2,21 @@ import uuid from './uuid.js';
 import { sleep } from 'k6';
 import http from 'k6/http';
 
+export const options = {
+    discardResponseBodies: true,
+    scenarios: {
+        contacts: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '20s', target: 50 },
+                { duration: '10s', target: 0 },
+            ],
+            gracefulRampDown: '0s',
+        },
+    },
+};
+
 export default function () {
     const cartId = uuid();
     // Create cart through POST request
