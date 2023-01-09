@@ -24,13 +24,27 @@ public class CartGrain : CartGrainBase
         _documentStore = documentStore;
     }
 
+    public override Task OnReceive()
+    {
+        switch (Context.Message)
+        {
+            case ReceiveTimeout _:
+                Console.WriteLine("Actor timed out: " + _cartId);
+                Context.Poison(Context.Self);
+                break;
+        }
+        return base.OnReceive();
+    }
+
     public override Task OnStarted()
     {
         try
         {
+            Console.WriteLine("====> OnStarted: " + _cartId);
             using var dbSession = _documentStore.LightweightSession();
             var cart = dbSession.Events.AggregateStream<Cart>(_cartId);
             _cart = cart?.ToDto();
+            Context.SetReceiveTimeout(TimeSpan.FromSeconds(5));
         }
         catch (Exception ex)
         {

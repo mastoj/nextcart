@@ -29,12 +29,12 @@ public static class ProtoActorExtensions
             // var remoteConfig = GrpcNetRemoteConfig
             //     .BindToLocalhost();
 
-            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost(8090).WithProtoMessages(CartMessagesReflection.Descriptor);
+            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor);
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
-                    clusterProvider: new SeedNodeClusterProvider(),
+                    clusterProvider: new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090))),
                     // clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
                     identityLookup: new PartitionIdentityLookup()
                 )
