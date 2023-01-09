@@ -1,7 +1,7 @@
 using System.Net;
 using FluentAssertions;
 using NextCart.Api.Cart;
-using NextCart.Api.Cart.Proto;
+using NextCart.Contracts;
 
 namespace NextCart.Api.Tests;
 

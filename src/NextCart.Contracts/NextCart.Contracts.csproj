@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.21.12" />
+    <PackageReference Include="Grpc.Tools" Version="2.51.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Proto.Actor" Version="1.0.0" />
+    <PackageReference Include="Proto.Cluster" Version="1.0.0" />
+    <PackageReference Include="Proto.Cluster.CodeGen" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="CartMessages.proto" />
+    <ProtoGrain Include="CartGrain.proto" AdditionalImportDirs="./" />
+  </ItemGroup>
+</Project>

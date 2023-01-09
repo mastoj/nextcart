@@ -24,7 +24,7 @@ public static class ProtoActorExtensions
 
             // var remoteConfig = GrpcNetRemoteConfig
             //     .BindToLocalhost();
-            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(NextCart.Service.Cart.Proto.CartMessagesReflection.Descriptor);
+            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(NextCart.Contracts.CartMessagesReflection.Descriptor);
 
             // cluster configuration
             var clusterConfig = ClusterConfig

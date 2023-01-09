@@ -26,5 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NextCart.Api\NextCart.Api.csproj" />
+    <ProjectReference Include="..\NextCart.Contracts\NextCart.Contracts.csproj" />
   </ItemGroup>
 </Project>

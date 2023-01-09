@@ -3,8 +3,8 @@ using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Proto.Cluster;
-using NextCart.Service.Cart.Proto;
 using Proto;
+using NextCart.Contracts;
 
 namespace NextCart.Api.Cart;
 
