@@ -3,6 +3,10 @@ import { sleep } from 'k6';
 import http from 'k6/http';
 
 export const options = {
+    thresholds: {
+        http_req_failed: ['rate<0.01'], // http errors should be less than 1%
+        http_req_duration: ['p(95)<200'], // 95% of requests should be below 200ms
+    },
     discardResponseBodies: true,
     scenarios: {
         contacts: {
@@ -52,32 +56,6 @@ export default function () {
     http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/decreasequantity`, null, params);
     //    sleep(1);
     http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-    http.get('http://localhost:5095/cart/' + cartId);
-
     //    sleep(1);
     http.del(`http://localhost:5095/cart/${cartId}/items/${productId}`, null, params);
     //    sleep(1);
