@@ -4,6 +4,7 @@ using NextCart.Contracts;
 using NextCart.Service.Cart;
 using Proto;
 using Proto.Cluster;
+using Proto.Cluster.Kubernetes;
 using Proto.Cluster.Partition;
 using Proto.Cluster.Seed;
 using Proto.DependencyInjection;
@@ -15,27 +16,26 @@ namespace NextCart.Service.Infrastructure;
 
 public static class ProtoActorExtensions
 {
-    public static void AddActorSystem(this IServiceCollection serviceCollection)
+    public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
     {
         serviceCollection.AddSingleton(provider =>
         {
             // actor system configuration
-
             var actorSystemConfig = ActorSystemConfig
                 .Setup();
+            var remoteConfig =
+                useKubernetes ?
+                    GrpcNetRemoteConfig
+                        .BindToAllInterfaces(advertisedHost: advertisedHost)
+                        .WithProtoMessages(CartMessagesReflection.Descriptor) :
+                    GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor);
 
-            // remote configuration
-
-            // var remoteConfig = GrpcNetRemoteConfig
-            //     .BindToLocalhost();
-
-            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor);
-            // cluster configuration
+            IClusterProvider clusterProvider =
+                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090)));
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
-                    clusterProvider: new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090))),
-                    // clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
+                    clusterProvider: clusterProvider,
                     identityLookup: new PartitionIdentityLookup()
                 )
                 .WithClusterKind(
@@ -44,8 +44,6 @@ public static class ProtoActorExtensions
                     new CartGrainActor((context, clusterIdentity) =>
                         ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
                 );
-
-            // create the actor system
 
             return new ActorSystem(actorSystemConfig)
                 .WithServiceProvider(provider)

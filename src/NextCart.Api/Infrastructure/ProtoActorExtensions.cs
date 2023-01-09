@@ -1,5 +1,6 @@
 using Proto;
 using Proto.Cluster;
+using Proto.Cluster.Kubernetes;
 using Proto.Cluster.Partition;
 using Proto.Cluster.Seed;
 using Proto.Cluster.Testing;
@@ -11,7 +12,7 @@ namespace NextCart.Api.Infrastructure;
 
 public static class ProtoActorExtensions
 {
-    public static void AddActorSystem(this IServiceCollection serviceCollection)
+    public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
     {
         serviceCollection.AddSingleton(provider =>
         {
@@ -24,14 +25,21 @@ public static class ProtoActorExtensions
 
             // var remoteConfig = GrpcNetRemoteConfig
             //     .BindToLocalhost();
-            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost(8090).WithProtoMessages(NextCart.Contracts.CartMessagesReflection.Descriptor);
+            var remoteConfig =
+                useKubernetes ?
+                    GrpcNetRemoteConfig
+                        .BindToAllInterfaces(advertisedHost: advertisedHost)
+                        .WithProtoMessages(Contracts.CartMessagesReflection.Descriptor) :
+                    GrpcNetRemoteConfig.BindToLocalhost(8090).WithProtoMessages(Contracts.CartMessagesReflection.Descriptor);
+
+            IClusterProvider clusterProvider =
+                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090)));
 
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
-                    clusterProvider: new SeedNodeClusterProvider(),
-                    // clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
+                    clusterProvider: clusterProvider,
                     identityLookup: new PartitionIdentityLookup()
                 );
             // .WithClusterKind(
