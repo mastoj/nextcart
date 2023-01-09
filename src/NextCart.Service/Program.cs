@@ -20,7 +20,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             services.AddMarten();
             services.AddActorSystem();
-            services.AddHostedService<ActorSystemClusterHostedService>();
+            services.AddHostedService<ActorSystemClusterServiceHostedService>();
             services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

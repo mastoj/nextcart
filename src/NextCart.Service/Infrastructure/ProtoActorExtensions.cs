@@ -4,9 +4,12 @@ using NextCart.Service.Cart.Proto;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Partition;
+using Proto.Cluster.Seed;
 using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
+using Proto.Remote;
 using Proto.Remote.GrpcNet;
+// using ProtosReflection = NextCart.Service.Cart.Proto.Prot;
 
 namespace NextCart.Service.Infrastructure;
 
@@ -23,14 +26,16 @@ public static class ProtoActorExtensions
 
             // remote configuration
 
-            var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost();
+            // var remoteConfig = GrpcNetRemoteConfig
+            //     .BindToLocalhost();
 
+            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost(8090).WithProtoMessages(CartMessagesReflection.Descriptor);
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
-                    clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
+                    clusterProvider: new SeedNodeClusterProvider(),
+                    // clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
                     identityLookup: new PartitionIdentityLookup()
                 )
                 .WithClusterKind(

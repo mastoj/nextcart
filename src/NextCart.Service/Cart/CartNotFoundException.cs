@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace NextCart.Service.Cart
 {
     [Serializable]
-    internal class CartNotFoundException : Exception
+    public class CartNotFoundException : Exception
     {
         private Guid id;
 

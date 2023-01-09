@@ -4,12 +4,12 @@ using NextCart.Api.Cart;
 using NextCart.Api.Infrastructure;
 using dotenv.net;
 using Microsoft.AspNetCore.Diagnostics;
+using NextCart.Service.Cart;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddMarten();
 builder.Services.AddActorSystem();
-builder.Services.AddHostedService<ActorSystemClusterHostedService>();
+builder.Services.AddHostedService<ActorSystemClusterClientHostedService>();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 

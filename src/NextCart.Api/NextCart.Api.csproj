@@ -8,21 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="dotenv.net" Version="3.1.2" />
-    <PackageReference Include="Grpc.Tools" Version="2.51.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Marten" Version="6.0.0-alpha.6" />
     <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.2.7" />
     <PackageReference Include="Proto.Actor" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster" Version="1.0.0" />
-    <PackageReference Include="Proto.Cluster.CodeGen" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster.Kubernetes" Version="1.0.0" />
     <PackageReference Include="Proto.Cluster.TestProvider" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Cart/Proto/CartMessages.proto" />
-    <ProtoGrain Include="Cart/Proto/CartGrain.proto" AdditionalImportDirs="./Cart/Proto" />
+    <ProjectReference Include="..\NextCart.Service\NextCart.Service.csproj" />
   </ItemGroup>
 </Project>

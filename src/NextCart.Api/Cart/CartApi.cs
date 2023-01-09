@@ -2,9 +2,9 @@ using System.Text;
 using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using NextCart.Api.Cart.Proto;
-using Proto;
 using Proto.Cluster;
+using NextCart.Service.Cart.Proto;
+using Proto;
 
 namespace NextCart.Api.Cart;
 
@@ -36,12 +36,12 @@ public static class CartApi
             Console.WriteLine("====> CreateCart: " + request.cartId);
             var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
             var result = await grain.
-                    Create(new Proto.CreateCart { Id = request.cartId }, ct);
+                    Create(new CreateCart { Id = request.cartId }, ct);
             return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
         }
         catch (ExistingStreamIdCollisionException)
         {
-            throw new DuplicateCartException(request.cartId);
+            throw new Service.Cart.DuplicateCartException(request.cartId);
         }
         catch (Exception ex)
         {
@@ -55,7 +55,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.Get(new Proto.GetCart(), ct);
+            var result = await grain.Get(new GetCart(), ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -70,7 +70,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.AddItem(new Proto.AddItem { ProductId = request.productId }, ct);
+            var result = await grain.AddItem(new AddItem { ProductId = request.productId }, ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -85,7 +85,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.IncreaseQuantity(new Proto.IncreaseQuantity { ProductId = productId }, ct);
+            var result = await grain.IncreaseQuantity(new IncreaseQuantity { ProductId = productId }, ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -100,7 +100,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.DecreaseQuantity(new Proto.DecreaseQuantity { ProductId = productId }, ct);
+            var result = await grain.DecreaseQuantity(new DecreaseQuantity { ProductId = productId }, ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -115,7 +115,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.RemoveItem(new Proto.RemoveItem { ProductId = productId }, ct);
+            var result = await grain.RemoveItem(new RemoveItem { ProductId = productId }, ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -130,7 +130,7 @@ public static class CartApi
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.Clear(new Proto.Clear(), ct);
+            var result = await grain.Clear(new Clear(), ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)

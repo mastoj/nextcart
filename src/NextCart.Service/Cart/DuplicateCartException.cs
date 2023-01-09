@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace NextCart.Service.Cart
 {
     [Serializable]
-    internal class DuplicateCartException : Exception
+    public class DuplicateCartException : Exception
     {
         private Guid cartId;
 

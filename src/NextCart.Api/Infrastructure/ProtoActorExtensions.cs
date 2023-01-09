@@ -1,11 +1,10 @@
-using Marten;
-using NextCart.Api.Cart;
-using NextCart.Api.Cart.Proto;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Partition;
+using Proto.Cluster.Seed;
 using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
+using Proto.Remote;
 using Proto.Remote.GrpcNet;
 
 namespace NextCart.Api.Infrastructure;
@@ -23,22 +22,24 @@ public static class ProtoActorExtensions
 
             // remote configuration
 
-            var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost();
+            // var remoteConfig = GrpcNetRemoteConfig
+            //     .BindToLocalhost();
+            var remoteConfig = GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(NextCart.Service.Cart.Proto.CartMessagesReflection.Descriptor);
 
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
-                    clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
+                    clusterProvider: new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090))),
+                    // clusterProvider: new TestProvider(new TestProviderOptions(), new InMemAgent()),
                     identityLookup: new PartitionIdentityLookup()
-                )
-                .WithClusterKind(
-                    kind: CartGrainActor.Kind,
-                    prop: Props.FromProducer(() =>
-                    new CartGrainActor((context, clusterIdentity) =>
-                        ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
                 );
+            // .WithClusterKind(
+            //     kind: CartGrainActor.Kind,
+            //     prop: Props.FromProducer(() =>
+            //     new CartGrainActor((context, clusterIdentity) =>
+            //         ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
+            // );
 
             // create the actor system
 

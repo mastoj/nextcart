@@ -3,11 +3,11 @@ using Proto;
 using Proto.Cluster;
 
 namespace NextCart.Service;
-public class ActorSystemClusterHostedService : IHostedService
+public class ActorSystemClusterServiceHostedService : IHostedService
 {
     private readonly ActorSystem _actorSystem;
 
-    public ActorSystemClusterHostedService(ActorSystem actorSystem)
+    public ActorSystemClusterServiceHostedService(ActorSystem actorSystem)
     {
         _actorSystem = actorSystem;
     }
