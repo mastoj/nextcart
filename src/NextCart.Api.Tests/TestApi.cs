@@ -30,7 +30,7 @@ public class PostgreSQLFixture : IAsyncLifetime
     {
         await testcontainers.StartAsync();
         Environment.SetEnvironmentVariable("MARTEN_SCHEMANAME", "cart");
-        var ds = Marten.DocumentStore.For(options => options.ConfigureMarten(testcontainers.ConnectionString));
+        // var ds = Marten.DocumentStore.For(options => options.ConfigureMarten(testcontainers.ConnectionString));
         ConnectionString = testcontainers.ConnectionString;
     }
 
@@ -65,7 +65,7 @@ public class TestApi : WebApplicationFactory<Program>
     {
         builder.ConfigureTestServices(services =>
         {
-            services.AddMarten(_connectionString);
+            // services.AddMarten(_connectionString);
         });
     }
 }

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NextCart.Contracts;
+using NextCart.Contracts.Cart.Proto;
 using NextCart.Service.Cart;
 using Proto;
 using Proto.Cluster;
@@ -18,20 +18,26 @@ public static class ProtoActorExtensions
 {
     public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
     {
-        serviceCollection.AddSingleton(provider =>
+        _ = serviceCollection.AddSingleton(provider =>
         {
             // actor system configuration
             var actorSystemConfig = ActorSystemConfig
                 .Setup();
+
+            var seedHost = Environment.GetEnvironmentVariable("PROTO_SEED_HOST") ?? "127.0.0.1";
             var remoteConfig =
                 useKubernetes ?
                     GrpcNetRemoteConfig
                         .BindToAllInterfaces(advertisedHost: advertisedHost)
                         .WithProtoMessages(CartMessagesReflection.Descriptor) :
-                    GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor);
+                        seedHost == "127.0.0.1" ?
+                            GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor) :
+                            GrpcNetRemoteConfig
+                                .BindToAllInterfaces(advertisedHost: seedHost, port: 8091)
+                                .WithProtoMessages(CartMessagesReflection.Descriptor);
 
             IClusterProvider clusterProvider =
-                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090)));
+                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, 8090)));
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",

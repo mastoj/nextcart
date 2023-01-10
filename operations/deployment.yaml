@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Release.Name }}
+  name: nextcart
 rules:
   - apiGroups:
       - ""
@@ -12,53 +12,50 @@ rules:
       - list
       - watch
       - patch
-
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ .Release.Name }}
+  name: nextcart
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ .Release.Name }}
+  name: nextcart
 subjects:
   - kind: ServiceAccount
-    name: {{ .Release.Name }}
-
+    name: nextcart
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Release.Name }}
-
+  name: nextcart
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name  }}
+  name: nextcart
   labels:
-    app: {{ .Release.Name }}
+    app: nextcart
 spec:
-  replicas: {{ .Values.member.replicaCount }}
+  replicas: 2
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: nextcart
   template:
     metadata:
-      {{- with .Values.member.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        app: {{ .Release.Name }}
+        app: nextcart
     spec:
-      serviceAccountName: {{ .Release.Name }}
+      serviceAccountName: nextcart
       securityContext:
-        {{- toYaml .Values.member.podSecurityContext | nindent 8 }}
+        runAsUser: 101
       containers:
         - name: member
           securityContext:
-            {{- toYaml .Values.member.securityContext | nindent 12 }}
+            allowPrivilegeEscalation: false
           image: "{{ .Values.member.image.repository }}:{{ .Values.member.image.tag }}"
-          imagePullPolicy: {{ .Values.member.image.pullPolicy }}
+          imagePullPolicy: { { .Values.member.image.pullPolicy } }
           env:
             - name: ASPNETCORE_URLS
               value: http://*:5000
@@ -70,17 +67,17 @@ spec:
             - name: http
               containerPort: 5000
               protocol: TCP
-
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}
+  name: nextcart
 spec:
-  type: {{ .Values.member.service.type }}
+  type: { { .Values.member.service.type } }
   ports:
-    - port: {{ .Values.member.service.port }}
+    - port: { { .Values.member.service.port } }
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    app: {{ .Release.Name }}
+    app: nextcart

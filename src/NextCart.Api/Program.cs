@@ -4,7 +4,7 @@ using NextCart.Api.Cart;
 using NextCart.Api.Infrastructure;
 using dotenv.net;
 using Microsoft.AspNetCore.Diagnostics;
-using NextCart.Service.Cart;
+using NextCart.Domain.Cart;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);

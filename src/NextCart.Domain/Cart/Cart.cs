@@ -1,4 +1,4 @@
-namespace NextCart.Service.Cart;
+namespace NextCart.Domain.Cart;
 
 public record Product(
     string ProductId,

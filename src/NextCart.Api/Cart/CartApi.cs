@@ -1,10 +1,8 @@
-using System.Text;
-using Marten.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Proto.Cluster;
 using Proto;
-using NextCart.Contracts;
+using NextCart.Contracts.Cart.Proto;
 
 namespace NextCart.Api.Cart;
 
@@ -38,10 +36,6 @@ public static class CartApi
             var result = await grain.
                     Create(new CreateCart { Id = request.cartId }, ct);
             return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
-        }
-        catch (ExistingStreamIdCollisionException)
-        {
-            throw new Service.Cart.DuplicateCartException(request.cartId);
         }
         catch (Exception ex)
         {

@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace NextCart.Service.Cart
+namespace NextCart.Domain.Cart
 {
     public enum ErrorCode
     {

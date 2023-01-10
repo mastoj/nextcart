@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "NextCart.Contracts";
+option csharp_namespace = "NextCart.Contracts.Cart.Proto";
 
 // import "google/protobuf/empty.proto";
 

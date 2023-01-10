@@ -25,15 +25,20 @@ public static class ProtoActorExtensions
 
             // var remoteConfig = GrpcNetRemoteConfig
             //     .BindToLocalhost();
+            var seedHost = Environment.GetEnvironmentVariable("PROTO_SEED_HOST") ?? "127.0.0.1";
             var remoteConfig =
                 useKubernetes ?
                     GrpcNetRemoteConfig
                         .BindToAllInterfaces(advertisedHost: advertisedHost)
-                        .WithProtoMessages(Contracts.CartMessagesReflection.Descriptor) :
-                    GrpcNetRemoteConfig.BindToLocalhost(8090).WithProtoMessages(Contracts.CartMessagesReflection.Descriptor);
+                        .WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor) :
+                    seedHost == "127.0.0.1" ?
+                        GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor) :
+                        GrpcNetRemoteConfig
+                            .BindToAllInterfaces(advertisedHost: seedHost, port: 8090)
+                            .WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor);
 
             IClusterProvider clusterProvider =
-                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions(("127.0.0.1", 8090)));
+                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, 8090)));
 
             // cluster configuration
             var clusterConfig = ClusterConfig

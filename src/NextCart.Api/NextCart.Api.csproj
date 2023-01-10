@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NextCart.Service\NextCart.Service.csproj" />
     <ProjectReference Include="..\NextCart.Contracts\NextCart.Contracts.csproj" />
+    <ProjectReference Include="..\NextCart.Domain\NextCart.Domain.csproj" />
   </ItemGroup>
 </Project>

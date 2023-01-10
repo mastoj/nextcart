@@ -2,6 +2,8 @@ import uuid from './uuid.js';
 import { sleep } from 'k6';
 import http from 'k6/http';
 
+const host = "http://localhost:5000"
+
 export const options = {
     thresholds: {
         http_req_failed: ['rate<0.01'], // http errors should be less than 1%
@@ -33,31 +35,31 @@ export default function () {
             'Content-Type': 'application/json',
         },
     };
-    http.post('http://localhost:5095/cart', JSON.stringify(createRequest), params);
+    http.post(`${host}/cart`, JSON.stringify(createRequest), params);
     // Get cart through GET request
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
     const productId = uuid();
     const addItemRequest = {
         productId: productId
     };
-    const response = http.post(`http://localhost:5095/cart/${cartId}/items`, JSON.stringify(addItemRequest), params);
+    const response = http.post(`${host}/cart/${cartId}/items`, JSON.stringify(addItemRequest), params);
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
     //    sleep(1);
-    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/increasequantity`, null, params);
+    http.post(`${host}/cart/${cartId}/items/${productId}/increasequantity`, null, params);
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
     //    sleep(1);
-    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/increasequantity`, null, params);
+    http.post(`${host}/cart/${cartId}/items/${productId}/increasequantity`, null, params);
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
     //    sleep(1);
-    http.post(`http://localhost:5095/cart/${cartId}/items/${productId}/decreasequantity`, null, params);
+    http.post(`${host}/cart/${cartId}/items/${productId}/decreasequantity`, null, params);
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
     //    sleep(1);
-    http.del(`http://localhost:5095/cart/${cartId}/items/${productId}`, null, params);
+    http.del(`${host}/cart/${cartId}/items/${productId}`, null, params);
     //    sleep(1);
-    http.get('http://localhost:5095/cart/' + cartId);
+    http.get(`${host}/cart/${cartId}`);
 }
