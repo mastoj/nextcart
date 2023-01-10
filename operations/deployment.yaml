@@ -43,7 +43,6 @@ spec:
       app: nextcart
   template:
     metadata:
-      annotations:
       labels:
         app: nextcart
     spec:
@@ -54,8 +53,8 @@ spec:
         - name: member
           securityContext:
             allowPrivilegeEscalation: false
-          image: "{{ .Values.member.image.repository }}:{{ .Values.member.image.tag }}"
-          imagePullPolicy: { { .Values.member.image.pullPolicy } }
+          image: nextcart-api:1.0.0
+          imagePullPolicy: Never
           env:
             - name: ASPNETCORE_URLS
               value: http://*:5000
@@ -63,19 +62,59 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: NEXTCART_USE_KUBERNETES
+              value: "true"
           ports:
             - name: http
               containerPort: 5000
               protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcart-service
+  labels:
+    app: nextcart-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nextcart-service
+  template:
+    metadata:
+      labels:
+        app: nextcart-service
+    spec:
+      serviceAccountName: nextcart
+      securityContext:
+        runAsUser: 101
+      containers:
+        - name: member
+          securityContext:
+            allowPrivilegeEscalation: false
+          image: nextcart-service:1.0.0
+          imagePullPolicy: Never
+          env:
+            - name: ProtoActor__AdvertisedHost
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NEXTCART_USE_KUBERNETES
+              value: "true"
+            - name: MARTEN_CONNECTIONSTRING
+              value: "Host=host.minikube.internal;Port=5432;Database=postgres;Username=user;Password=password"
+            - name: MARTEN_SCHEMANAME
+              value: "public"
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: nextcart
 spec:
-  type: { { .Values.member.service.type } }
+  type: ClusterIP
   ports:
-    - port: { { .Values.member.service.port } }
+    - port: 5000
       targetPort: http
       protocol: TCP
       name: http
