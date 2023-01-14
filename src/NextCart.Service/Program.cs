@@ -20,7 +20,7 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         {
             services.AddMarten();
             services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
-            services.AddHostedService<ActorSystemClusterServiceHostedService>();
+            services.AddHostedService<ActorSystemClusterHostedService>();
             services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
