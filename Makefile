@@ -16,3 +16,14 @@ docker-run-service: ## Run the container
 
 local-run: ## Run the application locally
 	dotnet run --project src/NextCart.Api/NextCart.Api.csproj
+
+minikube-start: ## Start minikube
+	minikube start
+
+
+minikube-publish-image: minikube-start ## Publish images to minikube
+	minikube image load nextcart-api:1.0.0
+	minikube image load nextcart-service:1.0.0
+
+kube-apply: minikube-publish-image ## Apply k8s manifests
+	kubectl apply -f operations/deployment.yaml
