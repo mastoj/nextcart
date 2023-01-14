@@ -2,7 +2,7 @@ import uuid from './uuid.js';
 import { sleep } from 'k6';
 import http from 'k6/http';
 
-const host = "http://localhost:5000"
+const host = __ENV.NEXTCART_HOST
 
 export const options = {
     thresholds: {
@@ -15,8 +15,8 @@ export const options = {
             executor: 'ramping-vus',
             startVUs: 0,
             stages: [
-                { duration: '20s', target: 100 },
-                { duration: '30s', target: 100 },
+                { duration: '20s', target: 2000 },
+                { duration: '30s', target: 2000 },
                 { duration: '10s', target: 0 },
             ],
             gracefulRampDown: '0s',

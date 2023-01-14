@@ -112,7 +112,7 @@ kind: Service
 metadata:
   name: nextcart
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 5000
       targetPort: http

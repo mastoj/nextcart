@@ -27,3 +27,9 @@ minikube-publish-image: minikube-start ## Publish images to minikube
 
 kube-apply: minikube-publish-image ## Apply k8s manifests
 	kubectl apply -f operations/deployment.yaml
+
+kube-tunnel: ## Run tunnel to minikube
+	minikube service nextcart --url
+
+k6-run: ## Run k6 load test
+	NEXTCART_HOST=$$(minikube service nextcart --url) k6 run k6/index.js
