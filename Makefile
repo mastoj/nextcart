@@ -25,8 +25,8 @@ minikube-publish-image: minikube-start ## Publish images to minikube
 	minikube image load nextcart-api:1.0.0
 	minikube image load nextcart-service:1.0.0
 
-kube-apply: minikube-publish-image ## Apply k8s manifests
-	kubectl apply -f operations/deployment.yaml
+kube-apply: ## Apply k8s manifests
+	cd operations && ./deploy.sh
 
 kube-tunnel: ## Run tunnel to minikube
 	minikube service nextcart --url
