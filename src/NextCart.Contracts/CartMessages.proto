@@ -53,9 +53,16 @@ message CartDto {
     int32 version = 99;
 }
 
+enum ErrorCode {
+    Unknown = 0;    
+    CartNotFound = 1;
+    DuplicateCartId = 2;
+}
+
 message ErrorDto {
     string message = 1;
-    string errorCode = 2;
+    ErrorCode errorCode = 2;
+    int32 httpErrorCode = 3;
 }
 
 message CartResponse {

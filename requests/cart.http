@@ -3,7 +3,7 @@
 @dockerhost = http://localhost:5000
 @localhost = http://localhost:5095
 @kubeHost = http://192.168.49.2:30903
-@host = {{kubeHost}}
+@host = {{dockerhost}}
 
 
 ### Create cart

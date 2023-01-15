@@ -4,6 +4,7 @@ using Proto.Cluster;
 using Proto;
 using NextCart.Contracts.Cart.Proto;
 using Polly;
+using NextCart.Api.Infrastructure;
 
 namespace NextCart.Api.Cart;
 
@@ -41,7 +42,11 @@ public static class CartApi
             var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
             var result = await
                 _policy.ExecuteAsync(async () => await grain.Create(new CreateCart { Id = request.cartId }, ct));
-            return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
+            if (result?.Cart is not null)
+            {
+                return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
+            }
+            throw new ApiException(result!.Error!);
         }
         catch (Exception ex)
         {

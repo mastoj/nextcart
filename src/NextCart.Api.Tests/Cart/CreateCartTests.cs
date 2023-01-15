@@ -39,12 +39,12 @@ public class CreateCartTests : TestApi
         actualCart.Should().Be(new CartDto { Id = request.cartId, Version = 1 });
     }
 
-    // [Fact]
-    // public async void Duplicate_Cart_Id_Returns_Bad_Request()
-    // {
-    //     var request = ValidRequest();
-    //     _ = await Client.PostAsJsonAsync("/cart", request);
-    //     var response = await Client.PostAsJsonAsync("/cart", request);
-    //     response!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    // }
+    [Fact]
+    public async void Duplicate_Cart_Id_Returns_Bad_Request()
+    {
+        var request = ValidRequest();
+        _ = await Client.PostAsJsonAsync("/cart", request);
+        var response = await Client.PostAsJsonAsync("/cart", request);
+        response!.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

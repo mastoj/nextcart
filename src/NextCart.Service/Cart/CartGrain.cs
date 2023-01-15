@@ -4,6 +4,8 @@ using Proto.Cluster;
 using NextCart.Service.Infrastructure;
 using NextCart.Contracts.Cart.Proto;
 using NextCart.Domain.Cart;
+using System.Net;
+using Marten.Exceptions;
 
 namespace NextCart.Service.Cart;
 
@@ -57,14 +59,52 @@ public class CartGrain : CartGrainBase
 
     public override Task<CartResponse> Create(Contracts.Cart.Proto.CreateCart request)
     {
-        var result = _documentStore.Add<Domain.Cart.Cart>(_cartId, () => CartService.Handle(request.ToDomain()), this.Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        try
+        {
+            Console.WriteLine("Creating: " + _cartId);
+            var result = _documentStore.Add<Domain.Cart.Cart>(_cartId, () => CartService.Handle(request.ToDomain()), this.Context.CancellationToken).Result;
+            _cart = result!.ToDto();
+            var response = new CartResponse { Cart = _cart };
+            return Task.FromResult(response);
+        }
+        catch (AggregateException ex)
+        {
+            return HandleException(ex.InnerException!);
+        }
+        catch (Exception ex)
+        {
+            return HandleException(ex);
+        }
+    }
+
+    private Task<CartResponse> HandleException(Exception ex)
+    {
+        var error =
+            ex switch
+            {
+
+                ExistingStreamIdCollisionException => new ErrorDto
+                {
+                    Message = "Cart already exists",
+                    ErrorCode = Contracts.Cart.Proto.ErrorCode.DuplicateCartId,
+                    HttpErrorCode = (int)HttpStatusCode.BadRequest
+                },
+                _ => new ErrorDto
+                {
+                    Message = "Unknown error",
+                    ErrorCode = Contracts.Cart.Proto.ErrorCode.Unknown,
+                    HttpErrorCode = (int)HttpStatusCode.InternalServerError
+                }
+            };
+        Console.WriteLine("==> Exception: " + ex);
+        var response = new CartResponse { Error = error };
         return Task.FromResult(response);
     }
 
     public override Task<CartResponse> Get(GetCart request)
     {
+        Console.WriteLine("==> Getting: " + _cartId);
+
         return Task.FromResult(new CartResponse { Cart = _cart });
     }
 

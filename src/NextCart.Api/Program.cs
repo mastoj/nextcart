@@ -22,25 +22,21 @@ app.UseExceptionHandler(
     new ExceptionHandlerOptions
     {
         AllowStatusCode404Response = true,
-        ExceptionHandler = context =>
+        ExceptionHandler = async context =>
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 var exceptionHandlerPathFeature =
                     context.Features.Get<IExceptionHandlerPathFeature>();
-                if (exceptionHandlerPathFeature?.Error is DuplicateCartException)
+                if (exceptionHandlerPathFeature?.Error is ApiException)
                 {
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                }
-                else if (exceptionHandlerPathFeature?.Error is CartNotFoundException)
-                {
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    var exception = exceptionHandlerPathFeature.Error as ApiException;
+                    context.Response.StatusCode = exception!.errorDto.HttpErrorCode;
+                    await context.Response.WriteAsJsonAsync(exception.errorDto);
                 }
                 else
                 {
                     context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 }
-
-                return Task.CompletedTask;
             }
     });
 
