@@ -36,23 +36,15 @@ public static class CartApi
 
     private static async Task<Created<CartDto>> CreateCart(ActorSystem actorSystem, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
-        try
+        Console.WriteLine("====> CreateCart: " + request.cartId);
+        var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
+        var result = await
+            _policy.ExecuteAsync(async () => await grain.Create(new CreateCart { Id = request.cartId }, ct));
+        if (result?.Cart is not null)
         {
-            Console.WriteLine("====> CreateCart: " + request.cartId);
-            var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
-            var result = await
-                _policy.ExecuteAsync(async () => await grain.Create(new CreateCart { Id = request.cartId }, ct));
-            if (result?.Cart is not null)
-            {
-                return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
-            }
-            throw new ApiException(result!.Error!);
+            return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"====> Exception: {ex}");
-            throw;
-        }
+        throw new ApiException(result!.Error!);
     }
 
     private static async Task<Ok<CartDto>> GetCart(ActorSystem actorSystem, [FromRoute] string id, CancellationToken ct)
