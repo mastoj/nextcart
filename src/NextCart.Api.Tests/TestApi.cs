@@ -4,6 +4,7 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using NextCart.Api.Infrastructure;
+using NextCart.Domain.Infrastructure;
 using NextCart.Service.Infrastructure;
 
 namespace NextCart.Api.Tests;
@@ -67,7 +68,6 @@ public class TestApi : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.AddMarten(_connectionString);
-            services.AddTestActorSystem();
         });
     }
 }
