@@ -4,6 +4,10 @@
     <ProjectReference Include="..\NextCart.Contracts\NextCart.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="5.11.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

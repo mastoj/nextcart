@@ -1,6 +1,6 @@
 using NextCart.Domain.Cart;
 
-namespace NextCart.Service.Cart;
+namespace NextCart.Domain.Cart;
 
 public static class DomainMapper
 {

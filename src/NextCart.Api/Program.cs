@@ -4,11 +4,13 @@ using NextCart.Api.Cart;
 using NextCart.Api.Infrastructure;
 using dotenv.net;
 using Microsoft.AspNetCore.Diagnostics;
-using NextCart.Domain.Cart;
+using NextCart.Domain.Infrastructure;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+builder.Services.AddMarten();
+// builder.Services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+builder.Services.AddTestActorSystem();
 builder.Services.AddHostedService<ActorSystemClusterClientHostedService>();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

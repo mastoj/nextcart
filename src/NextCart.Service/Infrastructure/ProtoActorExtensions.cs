@@ -1,13 +1,10 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NextCart.Contracts.Cart.Proto;
-using NextCart.Service.Cart;
+using NextCart.Domain.Cart;
 using Proto;
 using Proto.Cluster;
 using Proto.Cluster.Kubernetes;
 using Proto.Cluster.Partition;
 using Proto.Cluster.Seed;
-using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
@@ -17,40 +14,6 @@ namespace NextCart.Service.Infrastructure;
 
 public static class ProtoActorExtensions
 {
-    public static void AddTestActorSystem(this IServiceCollection serviceCollection)
-    {
-        _ = serviceCollection.AddSingleton(provider =>
-        {
-            // actor system configuration
-            var actorSystemConfig = ActorSystemConfig
-                .Setup();
-
-            var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost();
-
-            IClusterProvider clusterProvider = new TestProvider(new TestProviderOptions(), new InMemAgent());
-
-            var clusterConfig = ClusterConfig
-                .Setup(
-                    clusterName: "NextCart",
-                    clusterProvider: clusterProvider,
-                    identityLookup: new PartitionIdentityLookup()
-                )
-                .WithClusterKind(
-                    kind: CartGrainActor.Kind,
-                    prop: Props.FromProducer(() =>
-                    new CartGrainActor((context, clusterIdentity) =>
-                        ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
-                );
-
-            return new ActorSystem(actorSystemConfig)
-                .WithServiceProvider(provider)
-                .WithRemote(remoteConfig)
-                .WithCluster(clusterConfig);
-        });
-        SetupLogger();
-    }
-
     public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
     {
         _ = serviceCollection.AddSingleton(provider =>

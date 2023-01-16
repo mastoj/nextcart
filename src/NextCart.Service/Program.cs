@@ -5,8 +5,7 @@
 using System.Text.Json.Serialization;
 using dotenv.net;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using NextCart.Domain.Infrastructure;
 using NextCart.Service;
 using NextCart.Service.Infrastructure;
 

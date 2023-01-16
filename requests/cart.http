@@ -1,9 +1,9 @@
-@cartId = 87dee802-c862-4069-936c-f41130460005
+@cartId = 87dee802-c862-4069-936c-f41130460006
 @productId = 00000000-c862-4069-936c-f41130460003
 @dockerhost = http://localhost:5000
 @localhost = http://localhost:5095
 @kubeHost = http://192.168.49.2:30903
-@host = {{dockerhost}}
+@host = {{localhost}}
 
 
 ### Create cart

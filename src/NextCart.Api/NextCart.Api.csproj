@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="dotenv.net" Version="3.1.2" />
+    <PackageReference Include="Marten" Version="5.11.0" />
     <PackageReference Include="Microsoft.NET.Build.Containers" Version="0.2.7" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="Proto.Actor" Version="1.0.0" />

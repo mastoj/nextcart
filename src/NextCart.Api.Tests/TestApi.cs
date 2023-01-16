@@ -3,7 +3,7 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using NextCart.Service;
+using NextCart.Api.Infrastructure;
 using NextCart.Service.Infrastructure;
 
 namespace NextCart.Api.Tests;
