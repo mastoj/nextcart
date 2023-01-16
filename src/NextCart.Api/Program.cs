@@ -8,8 +8,8 @@ using NextCart.Domain.Infrastructure;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddMarten();
 // builder.Services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+builder.Services.AddMarten();
 builder.Services.AddTestActorSystem();
 builder.Services.AddHostedService<ActorSystemClusterClientHostedService>();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
