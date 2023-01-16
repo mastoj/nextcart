@@ -22,11 +22,11 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
             Console.WriteLine("==> NEXTCART_MODE: " + nextCartMode);
             if (nextCartMode == "kubernetes")
             {
-                services.AddActorSystem(true, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+                services.AddKubernetesActorSystem(Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost")!);
             }
             else if (nextCartMode == "docker")
             {
-                services.AddActorSystem(false, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+                services.AddDockerActorSystem(Environment.GetEnvironmentVariable("PROTO_SEED_HOST")!);
             }
             else
             {

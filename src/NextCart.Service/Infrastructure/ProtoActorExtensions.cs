@@ -14,40 +14,63 @@ namespace NextCart.Service.Infrastructure;
 
 public static class ProtoActorExtensions
 {
-    public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
+    public static void AddKubernetesActorSystem(this IServiceCollection serviceCollection, string advertisedHost)
     {
-        _ = serviceCollection.AddSingleton(provider =>
+        var remoteConfig = GrpcNetRemoteConfig
+            .BindToAllInterfaces(advertisedHost: advertisedHost)
+            .WithProtoMessages(CartMessagesReflection.Descriptor);
+
+        IClusterProvider clusterProvider = new KubernetesProvider();
+
+        (string kind, Props props)[] clusterKinds(IServiceProvider provider) => new[]
+        {
+            (kind: CartGrainActor.Kind, props: Props.FromProducer(() =>
+                new CartGrainActor((context, clusterIdentity) =>
+                    ActivatorUtilities.CreateInstance<CartGrain>(provider, context))))
+        };
+        serviceCollection.AddActorSystem(clusterProvider, remoteConfig, clusterKinds);
+    }
+
+    public static void AddDockerActorSystem(this IServiceCollection serviceCollection, string seedHost)
+    {
+        var remoteConfig = GrpcNetRemoteConfig
+            .BindToAllInterfaces(advertisedHost: seedHost, port: 8091)
+            .WithProtoMessages(CartMessagesReflection.Descriptor);
+
+        IClusterProvider clusterProvider = new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, 8090)));
+
+        (string kind, Props props)[] clusterKinds(IServiceProvider provider) => new[]
+        {
+            (kind: CartGrainActor.Kind, props: Props.FromProducer(() =>
+                new CartGrainActor((context, clusterIdentity) =>
+                    ActivatorUtilities.CreateInstance<CartGrain>(provider, context))))
+        };
+
+        serviceCollection.AddActorSystem(clusterProvider, remoteConfig, clusterKinds);
+    }
+
+    private static void AddActorSystem(this IServiceCollection serviceCollection,
+        IClusterProvider clusterProvider,
+        GrpcNetRemoteConfig remoteConfig,
+        Func<IServiceProvider, (string kind, Props props)[]>? clusterKinds = null)
+    {
+        var actualClusterKinds = clusterKinds is null ? _ => Array.Empty<(string kind, Props props)>() : clusterKinds;
+        serviceCollection.AddSingleton(provider =>
         {
             // actor system configuration
+
             var actorSystemConfig = ActorSystemConfig
                 .Setup();
 
-            var seedHost = Environment.GetEnvironmentVariable("PROTO_SEED_HOST") ?? "127.0.0.1";
-            var remoteConfig =
-                useKubernetes ?
-                    GrpcNetRemoteConfig
-                        .BindToAllInterfaces(advertisedHost: advertisedHost)
-                        .WithProtoMessages(CartMessagesReflection.Descriptor) :
-                        seedHost == "127.0.0.1" ?
-                            GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(CartMessagesReflection.Descriptor) :
-                            GrpcNetRemoteConfig
-                                .BindToAllInterfaces(advertisedHost: seedHost, port: 8091)
-                                .WithProtoMessages(CartMessagesReflection.Descriptor);
-
-            IClusterProvider clusterProvider =
-                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, 8090)));
+            // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
                     clusterProvider: clusterProvider,
                     identityLookup: new PartitionIdentityLookup()
-                )
-                .WithClusterKind(
-                    kind: CartGrainActor.Kind,
-                    prop: Props.FromProducer(() =>
-                    new CartGrainActor((context, clusterIdentity) =>
-                        ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
-                );
+                ).WithClusterKinds(actualClusterKinds(provider));
+
+            // create the actor system
 
             return new ActorSystem(actorSystemConfig)
                 .WithServiceProvider(provider)

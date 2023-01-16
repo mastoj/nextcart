@@ -8,11 +8,8 @@ build-container: ## Build the container
 	dotnet publish src/NextCart.Api --os linux --arch x64 -c Release -p:PublishProfile=DefaultContainer
 	dotnet publish src/NextCart.Service --os linux --arch x64 -c Release /t:PublishContainer
 
-docker-run-api: ## Run the container
-	docker run -it -p 5000:80 -p 8090:8090 --rm --env-file src/NextCart.Api/.env.docker --add-host host.docker.internal:host-gateway --name nextcart-api nextcart-api:1.0.0
-
-docker-run-service: ## Run the container
-	docker run -it -p 8091:8091 --rm --env-file src/NextCart.Service/.env.docker --add-host host.docker.internal:host-gateway --name nextcart-service nextcart-service:1.0.0
+docker-run: ## Run the application in docker
+	docker compose -f compose-app.yaml up
 
 local-run: ## Run the application locally
 	dotnet run --project src/NextCart.Api/NextCart.Api.csproj
@@ -20,10 +17,9 @@ local-run: ## Run the application locally
 minikube-start: ## Start minikube
 	minikube start
 
-
-minikube-publish-image: minikube-start ## Publish images to minikube
-	minikube image load nextcart-api:1.0.0
-	minikube image load nextcart-service:1.0.0
+minikube-publish-image: ## Publish images to minikube
+	minikube image load nextcart-api:1.0.0 --overwrite
+	minikube image load nextcart-service:1.0.0 --overwrite
 
 kube-apply: ## Apply k8s manifests
 	cd operations && ./deploy.sh

@@ -16,40 +16,48 @@ public static class ProtoActorExtensions
 {
     public static void AddTestActorSystem(this IServiceCollection serviceCollection)
     {
-        _ = serviceCollection.AddSingleton(provider =>
+        var remoteConfig = GrpcNetRemoteConfig
+            .BindToLocalhost();
+
+        IClusterProvider clusterProvider = new TestProvider(new TestProviderOptions(), new InMemAgent());
+
+        (string kind, Props props)[] clusterKinds(IServiceProvider provider) => new[]
         {
-            // actor system configuration
-            var actorSystemConfig = ActorSystemConfig
-                .Setup();
-
-            var remoteConfig = GrpcNetRemoteConfig
-                .BindToLocalhost();
-
-            IClusterProvider clusterProvider = new TestProvider(new TestProviderOptions(), new InMemAgent());
-
-            var clusterConfig = ClusterConfig
-                .Setup(
-                    clusterName: "NextCart",
-                    clusterProvider: clusterProvider,
-                    identityLookup: new PartitionIdentityLookup()
-                )
-                .WithClusterKind(
-                    kind: CartGrainActor.Kind,
-                    prop: Props.FromProducer(() =>
-                    new CartGrainActor((context, clusterIdentity) =>
-                        ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
-                );
-
-            return new ActorSystem(actorSystemConfig)
-                .WithServiceProvider(provider)
-                .WithRemote(remoteConfig)
-                .WithCluster(clusterConfig);
-        });
-        SetupLogger();
+            (kind: CartGrainActor.Kind, props: Props.FromProducer(() =>
+                new CartGrainActor((context, clusterIdentity) =>
+                    ActivatorUtilities.CreateInstance<CartGrain>(provider, context))))
+        };
+        serviceCollection.AddActorSystem(clusterProvider, remoteConfig, clusterKinds);
     }
 
-    public static void AddActorSystem(this IServiceCollection serviceCollection, bool useKubernetes, string? advertisedHost = null)
+    public static void AddKubernetesActorSystem(this IServiceCollection serviceCollection, string advertisedHost)
     {
+        var remoteConfig = GrpcNetRemoteConfig
+            .BindToAllInterfaces(advertisedHost: advertisedHost)
+            .WithProtoMessages(CartMessagesReflection.Descriptor);
+
+        IClusterProvider clusterProvider = new KubernetesProvider();
+        serviceCollection.AddActorSystem(clusterProvider, remoteConfig);
+    }
+
+    public static void AddDockerActorSystem(this IServiceCollection serviceCollection, string seedHost)
+    {
+        var seedPort = 8090;
+        var remoteConfig =
+                    GrpcNetRemoteConfig
+                        .BindToAllInterfaces(advertisedHost: seedHost, port: seedPort)
+                        .WithProtoMessages(CartMessagesReflection.Descriptor);
+
+        IClusterProvider clusterProvider = new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, seedPort)));
+        serviceCollection.AddActorSystem(clusterProvider, remoteConfig);
+    }
+
+    private static void AddActorSystem(this IServiceCollection serviceCollection,
+        IClusterProvider clusterProvider,
+        GrpcNetRemoteConfig remoteConfig,
+        Func<IServiceProvider, (string kind, Props props)[]>? clusterKinds = null)
+    {
+        var actualClusterKinds = clusterKinds is null ? _ => Array.Empty<(string kind, Props props)>() : clusterKinds;
         serviceCollection.AddSingleton(provider =>
         {
             // actor system configuration
@@ -57,38 +65,13 @@ public static class ProtoActorExtensions
             var actorSystemConfig = ActorSystemConfig
                 .Setup();
 
-            // remote configuration
-
-            // var remoteConfig = GrpcNetRemoteConfig
-            //     .BindToLocalhost();
-            var seedHost = Environment.GetEnvironmentVariable("PROTO_SEED_HOST") ?? "127.0.0.1";
-            var remoteConfig =
-                useKubernetes ?
-                    GrpcNetRemoteConfig
-                        .BindToAllInterfaces(advertisedHost: advertisedHost)
-                        .WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor) :
-                    seedHost == "127.0.0.1" ?
-                        GrpcNetRemoteConfig.BindToLocalhost().WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor) :
-                        GrpcNetRemoteConfig
-                            .BindToAllInterfaces(advertisedHost: seedHost, port: 8090)
-                            .WithProtoMessages(Contracts.Cart.Proto.CartMessagesReflection.Descriptor);
-
-            IClusterProvider clusterProvider =
-                useKubernetes ? new KubernetesProvider() : new SeedNodeClusterProvider(new SeedNodeClusterProviderOptions((seedHost, 8090)));
-
             // cluster configuration
             var clusterConfig = ClusterConfig
                 .Setup(
                     clusterName: "NextCart",
                     clusterProvider: clusterProvider,
                     identityLookup: new PartitionIdentityLookup()
-                );
-            // .WithClusterKind(
-            //     kind: CartGrainActor.Kind,
-            //     prop: Props.FromProducer(() =>
-            //     new CartGrainActor((context, clusterIdentity) =>
-            //         ActivatorUtilities.CreateInstance<CartGrain>(provider, context)))
-            // );
+                ).WithClusterKinds(actualClusterKinds(provider));
 
             // create the actor system
 

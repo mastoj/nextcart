@@ -1,0 +1,43 @@
+version: "3"
+services:
+  db:
+    image: "postgres:14"
+    container_name: "nextcartdb"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+      PGDATA: pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ".postgres/.db:/var/lib/postgresql/data"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  api:
+    image: "nextcart-api:1.0.0"
+    environment:
+      PROTO_SEED_HOST: host.docker.internal
+      NEXTCART_MODE: docker
+    ports:
+      - "5000:80"
+      - "8090:8090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  service:
+    image: "nextcart-service:1.0.0"
+    environment:
+      MARTEN_CONNECTIONSTRING: Host=host.docker.internal;Port=5432;Database=postgres;Username=user;Password=password
+      MARTEN_SCHEMANAME: public
+      PROTO_SEED_HOST: host.docker.internal
+      NEXTCART_MODE: docker
+    ports:
+      - "8091:8091"
+    depends_on:
+      - api
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -16,11 +16,11 @@ if (nextCartMode == "local")
 }
 else if (nextCartMode == "kubernetes")
 {
-    builder.Services.AddActorSystem(true, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+    builder.Services.AddKubernetesActorSystem(Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost")!);
 }
 else if (nextCartMode == "docker")
 {
-    builder.Services.AddActorSystem(false, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+    builder.Services.AddDockerActorSystem(Environment.GetEnvironmentVariable("PROTO_SEED_HOST")!);
 }
 else
 {
