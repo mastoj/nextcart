@@ -18,7 +18,20 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
         .ConfigureServices((hostContext, services) =>
         {
             services.AddMarten();
-            services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+            var nextCartMode = Environment.GetEnvironmentVariable("NEXTCART_MODE") ?? "local";
+            Console.WriteLine("==> NEXTCART_MODE: " + nextCartMode);
+            if (nextCartMode == "kubernetes")
+            {
+                services.AddActorSystem(true, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+            }
+            else if (nextCartMode == "docker")
+            {
+                services.AddActorSystem(false, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+            }
+            else
+            {
+                throw new System.Exception("NEXTCART_MODE is not set to local, kubernetes or docker");
+            }
             services.AddHostedService<ActorSystemClusterHostedService>();
             services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

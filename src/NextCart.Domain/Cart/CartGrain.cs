@@ -44,14 +44,6 @@ public class CartGrain : CartGrainBase
         {
             Console.WriteLine("====> OnStarted: " + _cartId);
             using var dbSession = _documentStore.LightweightSession();
-            Console.WriteLine("===> Db session: " + dbSession);
-            Console.WriteLine("==> Fetching events");
-            var eventsOut = dbSession.Events.FetchStream(_cartId);
-            foreach (var e in eventsOut)
-            {
-                Console.WriteLine("==> Event: " + e);
-            }
-
             var cart = dbSession.Events.AggregateStream<Domain.Cart.Cart>(_cartId);
             _cart = cart?.ToDto();
             Context.SetReceiveTimeout(TimeSpan.FromSeconds(5));

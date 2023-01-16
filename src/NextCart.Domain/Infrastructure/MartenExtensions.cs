@@ -38,12 +38,6 @@ public static class MartenExtensions
         using var documentSession = documentStore.OpenSession();
         documentSession.Events.StartStream<T>(id, events);
         await documentSession.SaveChangesAsync(token: ct);
-        Console.WriteLine("==> Fetching events");
-        var eventsOut = documentSession.Events.FetchStream(id);
-        foreach (var e in eventsOut)
-        {
-            Console.WriteLine("==> Event: " + e);
-        }
         return (await documentSession.Events.AggregateStreamAsync<T>(id, token: ct))!;
     }
 

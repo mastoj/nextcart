@@ -8,9 +8,24 @@ using NextCart.Domain.Infrastructure;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
-// builder.Services.AddActorSystem(bool.Parse(Environment.GetEnvironmentVariable("NEXTCART_USE_KUBERNETES") ?? "false"), Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
-builder.Services.AddMarten();
-builder.Services.AddTestActorSystem();
+var nextCartMode = Environment.GetEnvironmentVariable("NEXTCART_MODE") ?? "local";
+if (nextCartMode == "local")
+{
+    builder.Services.AddMarten();
+    builder.Services.AddTestActorSystem();
+}
+else if (nextCartMode == "kubernetes")
+{
+    builder.Services.AddActorSystem(true, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+}
+else if (nextCartMode == "docker")
+{
+    builder.Services.AddActorSystem(false, Environment.GetEnvironmentVariable("ProtoActor__AdvertisedHost") ?? null);
+}
+else
+{
+    throw new System.Exception("NEXTCART_MODE is not set to local, kubernetes or docker");
+}
 builder.Services.AddHostedService<ActorSystemClusterClientHostedService>();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

@@ -62,8 +62,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: NEXTCART_USE_KUBERNETES
-              value: "true"
+            - name: NEXTCART_MODE
+              value: "kubernetes"
           ports:
             - name: http
               containerPort: 5000
@@ -99,8 +99,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: NEXTCART_USE_KUBERNETES
-              value: "true"
+            - name: NEXTCART_MODE
+              value: "kubernetes"
             - name: MARTEN_CONNECTIONSTRING
               value: "Host=host.minikube.internal;Port=5432;Database=postgres;Username=user;Password=password"
             - name: MARTEN_SCHEMANAME
