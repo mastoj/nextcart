@@ -106,7 +106,11 @@ public static class CartApi
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
                 _policy.ExecuteAsync(async () => await grain.DecreaseQuantity(new DecreaseQuantity { ProductId = productId }, ct));
-            return TypedResults.Ok(result.Cart);
+            if (result?.Cart is not null)
+            {
+                return TypedResults.Ok(result.Cart);
+            }
+            throw new ApiException(result!.Error!);
         }
         catch (Exception ex)
         {
@@ -122,7 +126,11 @@ public static class CartApi
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
                 _policy.ExecuteAsync(async () => await grain.RemoveItem(new RemoveItem { ProductId = productId }, ct));
-            return TypedResults.Ok(result.Cart);
+            if (result?.Cart is not null)
+            {
+                return TypedResults.Ok(result.Cart);
+            }
+            throw new ApiException(result!.Error!);
         }
         catch (Exception ex)
         {

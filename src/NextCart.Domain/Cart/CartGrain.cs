@@ -122,6 +122,10 @@ public class CartGrain : CartGrainBase
 
     public override Task<CartResponse> RemoveItem(Contracts.Cart.Proto.RemoveItem request)
     {
+        if (_cart is null)
+        {
+            return Task.FromResult(new CartResponse { Error = new ErrorDto { Message = "No cart for id: " + _cartId, ErrorCode = Contracts.Cart.Proto.ErrorCode.CartNotFound, HttpErrorCode = (int)HttpStatusCode.NotFound } });
+        }
         var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
         // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
         _cart = result!.ToDto();
