@@ -36,7 +36,7 @@ public class CreateCartTests : TestApi
         var request = ValidCreateCartRequest();
         var response = await Client.PostAsJsonAsync("/cart", request);
         var actualCart = await response.Content.ReadFromJsonAsync<CartDto>();
-        actualCart.Should().Be(new CartDto { Id = request.cartId, Version = 1 });
+        actualCart.Should().BeEquivalentTo(new CartDto { Id = request.cartId, Version = 1, Total = 0, Items = new List<ItemDto>() });
     }
 
     [Fact]

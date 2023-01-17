@@ -12,6 +12,8 @@ namespace NextCart.Domain.Cart
 
         public static CartEvent[] Handle(Cart cart, AddItem command)
         {
+            if (cart.Items?.Any(x => x.Product.ProductId == command.Product.ProductId) == true)
+                return Handle(cart, new IncreaseItemQuantity(command.Product.ProductId));
             return new[]
             {
                 new ItemAdded(new Item(command.Product, command.Product.Amount, 1), cart.Total + command.Product.Amount)
