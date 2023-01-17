@@ -70,7 +70,11 @@ public static class CartApi
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result =
                 await _policy.ExecuteAsync(async () => await grain.AddItem(new AddItem { ProductId = request.productId }, ct));
-            return TypedResults.Ok(result.Cart);
+            if (result?.Cart is not null)
+            {
+                return TypedResults.Ok(result.Cart);
+            }
+            throw new ApiException(result!.Error!);
         }
         catch (Exception ex)
         {

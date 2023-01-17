@@ -109,7 +109,10 @@ public class CartGrain : CartGrainBase
 
     public override Task<CartResponse> AddItem(Contracts.Cart.Proto.AddItem request)
     {
-        Console.WriteLine("====> AddItem: " + _cart.Version);
+        if (_cart is null)
+        {
+            return Task.FromResult(new CartResponse { Error = new ErrorDto { Message = "No cart for id: " + _cartId, ErrorCode = Contracts.Cart.Proto.ErrorCode.CartNotFound, HttpErrorCode = (int)HttpStatusCode.NotFound } });
+        }
         // var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain(GetProduct)), Context.CancellationToken).Result;
         var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain(GetProduct)), Context.CancellationToken).Result;
         _cart = result!.ToDto();
