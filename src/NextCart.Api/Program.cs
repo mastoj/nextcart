@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using NextCart.Api.Cart;
@@ -5,6 +6,10 @@ using NextCart.Api.Infrastructure;
 using dotenv.net;
 using Microsoft.AspNetCore.Diagnostics;
 using NextCart.Domain.Infrastructure;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using System.Diagnostics.Metrics;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +35,41 @@ builder.Services.AddHostedService<ActorSystemClusterClientHostedService>();
 builder.Services.Configure<JsonOptions>(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+// Add open telemetry
+var serviceName = "NextCart.Api";
+var serviceVersion = "1.0.0";
+
+var meter = new Meter(serviceName);
+var counter = meter.CreateCounter<long>("app.request-counter");
+
+var appResourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracerProviderBuilder =>
+    {
+        tracerProviderBuilder
+            .AddConsoleExporter()
+            .AddSource(serviceName)
+            .SetResourceBuilder(
+                ResourceBuilder.CreateDefault()
+                    .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddSqlClientInstrumentation();
+    })
+    .WithMetrics(metricProviderBuilder =>
+    {
+        metricProviderBuilder
+            .AddConsoleExporter()
+            .AddPrometheusExporter()
+            .AddMeter(meter.Name)
+            .SetResourceBuilder(appResourceBuilder)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+    });
+
 var app = builder.Build();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.MapGet("/", () => "Hello World!");
 
