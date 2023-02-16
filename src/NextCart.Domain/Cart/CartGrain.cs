@@ -12,6 +12,24 @@ public class CartGrain : CartGrainBase
 {
     private readonly IDocumentStore _documentStore;
     private CartDto? _cart;
+
+    private CartDto? CartDto
+    {
+        get
+        {
+            if (_cart == null)
+            {
+                using var dbSession = _documentStore.LightweightSession();
+                var cart = dbSession.Events.AggregateStream<Domain.Cart.Cart>(_cartId);
+                _cart = cart?.ToDto();
+            }
+            return _cart;
+        }
+        set
+        {
+            _cart = value;
+        }
+    }
     private readonly Guid _cartId;
 
     private static Product GetProduct(string productId)
@@ -21,7 +39,6 @@ public class CartGrain : CartGrainBase
 
     public CartGrain(IContext context, IDocumentStore documentStore) : base(context)
     {
-        _cart = new CartDto();
         _cartId = Guid.Parse(context.ClusterIdentity()!.Identity);
         _documentStore = documentStore;
     }
@@ -43,9 +60,6 @@ public class CartGrain : CartGrainBase
         try
         {
             Console.WriteLine("====> OnStarted: " + _cartId);
-            using var dbSession = _documentStore.LightweightSession();
-            var cart = dbSession.Events.AggregateStream<Domain.Cart.Cart>(_cartId);
-            _cart = cart?.ToDto();
             Context.SetReceiveTimeout(TimeSpan.FromSeconds(5));
         }
         catch (Exception ex)
@@ -62,8 +76,8 @@ public class CartGrain : CartGrainBase
         {
             Console.WriteLine("Creating: " + _cartId);
             var result = _documentStore.Add<Domain.Cart.Cart>(_cartId, () => CartService.Handle(request.ToDomain()), this.Context.CancellationToken).Result;
-            _cart = result!.ToDto();
-            var response = new CartResponse { Cart = _cart };
+            CartDto = result!.ToDto();
+            var response = new CartResponse { Cart = CartDto };
             return Task.FromResult(response);
         }
         catch (AggregateException ex)
@@ -104,59 +118,59 @@ public class CartGrain : CartGrainBase
     {
         Console.WriteLine("==> Getting: " + _cartId);
 
-        return Task.FromResult(new CartResponse { Cart = _cart });
+        return Task.FromResult(new CartResponse { Cart = CartDto });
     }
 
     public override Task<CartResponse> AddItem(Contracts.Cart.Proto.AddItem request)
     {
-        if (_cart is null)
+        if (CartDto is null)
         {
             return Task.FromResult(new CartResponse { Error = new ErrorDto { Message = "No cart for id: " + _cartId, ErrorCode = Contracts.Cart.Proto.ErrorCode.CartNotFound, HttpErrorCode = (int)HttpStatusCode.NotFound } });
         }
         // var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain(GetProduct)), Context.CancellationToken).Result;
-        var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain(GetProduct)), Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, CartDto.Version, (cart) => CartService.Handle(cart, request.ToDomain(GetProduct)), Context.CancellationToken).Result;
+        CartDto = result!.ToDto();
+        var response = new CartResponse { Cart = CartDto };
         return Task.FromResult(response);
     }
 
     public override Task<CartResponse> RemoveItem(Contracts.Cart.Proto.RemoveItem request)
     {
-        if (_cart is null)
+        if (CartDto is null)
         {
             return Task.FromResult(new CartResponse { Error = new ErrorDto { Message = "No cart for id: " + _cartId, ErrorCode = Contracts.Cart.Proto.ErrorCode.CartNotFound, HttpErrorCode = (int)HttpStatusCode.NotFound } });
         }
-        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
+        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, CartDto.Version, CartService.Handle(CartDto.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
         // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        CartDto = result!.ToDto();
+        var response = new CartResponse { Cart = CartDto };
         return Task.FromResult(response);
     }
 
     public override Task<CartResponse> IncreaseQuantity(Contracts.Cart.Proto.IncreaseQuantity request)
     {
-        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
+        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, CartDto.Version, CartService.Handle(CartDto.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
         // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        CartDto = result!.ToDto();
+        var response = new CartResponse { Cart = CartDto };
         return Task.FromResult(response);
     }
 
     public override Task<CartResponse> DecreaseQuantity(Contracts.Cart.Proto.DecreaseQuantity request)
     {
-        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
+        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, CartDto.Version, CartService.Handle(CartDto.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
         // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        CartDto = result!.ToDto();
+        var response = new CartResponse { Cart = CartDto };
         return Task.FromResult(response);
     }
 
     public override Task<CartResponse> Clear(Contracts.Cart.Proto.Clear request)
     {
-        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, _cart.Version, CartService.Handle(_cart.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
-        // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(_cartId, _cart.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
-        _cart = result!.ToDto();
-        var response = new CartResponse { Cart = _cart };
+        var result = _documentStore.Update<Domain.Cart.Cart>(_cartId, CartDto.Version, CartService.Handle(CartDto.ToDomain(), request.ToDomain()), Context.CancellationToken).Result;
+        // var result = _documentStore.GetAndUpdate<Domain.Cart.Cart>(CartDtoId, CartDto.Version, (cart) => CartService.Handle(cart, request.ToDomain()), Context.CancellationToken).Result;
+        CartDto = result!.ToDto();
+        var response = new CartResponse { Cart = CartDto };
         return Task.FromResult(response);
     }
 }

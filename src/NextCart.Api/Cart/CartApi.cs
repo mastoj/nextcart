@@ -5,6 +5,7 @@ using Proto;
 using NextCart.Contracts.Cart.Proto;
 using Polly;
 using NextCart.Api.Infrastructure;
+using Proto.OpenTelemetry;
 
 namespace NextCart.Api.Cart;
 
@@ -34,12 +35,12 @@ public static class CartApi
         return group;
     }
 
-    private static async Task<Created<CartDto>> CreateCart(ActorSystem actorSystem, [FromBody] CreateCartRequest request, CancellationToken ct)
+    private static async Task<Created<CartDto>> CreateCart(ActorSystem actorSystem, IRootContext rootContext, [FromBody] CreateCartRequest request, CancellationToken ct)
     {
         Console.WriteLine("====> CreateCart: " + request.cartId);
         var grain = actorSystem.Cluster().GetCartGrain(request.cartId);
         var result = await
-            _policy.ExecuteAsync(async () => await grain.Create(new CreateCart { Id = request.cartId }, ct));
+            _policy.ExecuteAsync(async () => await grain.Create(new CreateCart { Id = request.cartId }, rootContext, ct));
         if (result?.Cart is not null)
         {
             return TypedResults.Created($"/cart/{result.Cart.Id}", result.Cart);
@@ -47,13 +48,13 @@ public static class CartApi
         throw new ApiException(result!.Error!);
     }
 
-    private static async Task<Ok<CartDto>> GetCart(ActorSystem actorSystem, [FromRoute] string id, CancellationToken ct)
+    private static async Task<Ok<CartDto>> GetCart(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
-                _policy.ExecuteAsync(async () => await grain.Get(new GetCart(), ct));
+                _policy.ExecuteAsync(async () => await grain.Get(new GetCart(), rootContext, ct));
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -63,13 +64,13 @@ public static class CartApi
         }
     }
 
-    private static async Task<Ok<CartDto>> AddItem(ActorSystem actorSystem, [FromRoute] string id, [FromBody] AddItemRequest request, CancellationToken ct)
+    private static async Task<Ok<CartDto>> AddItem(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, [FromBody] AddItemRequest request, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result =
-                await _policy.ExecuteAsync(async () => await grain.AddItem(new AddItem { ProductId = request.productId }, ct));
+                await _policy.ExecuteAsync(async () => await grain.AddItem(new AddItem { ProductId = request.productId }, rootContext, ct));
             if (result?.Cart is not null)
             {
                 return TypedResults.Ok(result.Cart);
@@ -83,13 +84,13 @@ public static class CartApi
         }
     }
 
-    private static async Task<Ok<CartDto>> IncreaseQuantity(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    private static async Task<Ok<CartDto>> IncreaseQuantity(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
-                _policy.ExecuteAsync(async () => await grain.IncreaseQuantity(new IncreaseQuantity { ProductId = productId }, ct));
+                _policy.ExecuteAsync(async () => await grain.IncreaseQuantity(new IncreaseQuantity { ProductId = productId }, rootContext, ct));
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)
@@ -99,13 +100,13 @@ public static class CartApi
         }
     }
 
-    private static async Task<Ok<CartDto>> DecreaseQuantity(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    private static async Task<Ok<CartDto>> DecreaseQuantity(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
-                _policy.ExecuteAsync(async () => await grain.DecreaseQuantity(new DecreaseQuantity { ProductId = productId }, ct));
+                _policy.ExecuteAsync(async () => await grain.DecreaseQuantity(new DecreaseQuantity { ProductId = productId }, rootContext, ct));
             if (result?.Cart is not null)
             {
                 return TypedResults.Ok(result.Cart);
@@ -119,13 +120,13 @@ public static class CartApi
         }
     }
 
-    private static async Task<Ok<CartDto>> RemoveItem(ActorSystem actorSystem, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
+    private static async Task<Ok<CartDto>> RemoveItem(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, [FromRoute] string productId, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
             var result = await
-                _policy.ExecuteAsync(async () => await grain.RemoveItem(new RemoveItem { ProductId = productId }, ct));
+                _policy.ExecuteAsync(async () => await grain.RemoveItem(new RemoveItem { ProductId = productId }, rootContext, ct));
             if (result?.Cart is not null)
             {
                 return TypedResults.Ok(result.Cart);
@@ -139,12 +140,12 @@ public static class CartApi
         }
     }
 
-    private static async Task<Ok<CartDto>> ClearCart(ActorSystem actorSystem, [FromRoute] string id, CancellationToken ct)
+    private static async Task<Ok<CartDto>> ClearCart(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, CancellationToken ct)
     {
         try
         {
             var grain = actorSystem.Cluster().GetCartGrain(id);
-            var result = await grain.Clear(new Clear(), ct);
+            var result = await grain.Clear(new Clear(), rootContext, ct);
             return TypedResults.Ok(result.Cart);
         }
         catch (Exception ex)

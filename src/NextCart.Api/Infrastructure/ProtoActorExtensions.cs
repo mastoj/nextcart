@@ -26,7 +26,7 @@ public static class ProtoActorExtensions
         {
             (kind: CartGrainActor.Kind, props: Props.FromProducer(() =>
                 new CartGrainActor((context, clusterIdentity) =>
-                    ActivatorUtilities.CreateInstance<CartGrain>(provider, context))))
+                    ActivatorUtilities.CreateInstance<CartGrain>(provider, context))).WithTracing())
         };
         serviceCollection.AddActorSystem(clusterProvider, remoteConfig, clusterKinds);
     }
@@ -79,9 +79,9 @@ public static class ProtoActorExtensions
                 .WithServiceProvider(provider)
                 .WithRemote(remoteConfig)
                 .WithCluster(clusterConfig);
-            actorSystem.Root.WithTracing();
             return actorSystem;
         });
+        serviceCollection.AddSingleton(provider => provider.GetRequiredService<ActorSystem>().Root.WithTracing());
         SetupLogger();
     }
 
