@@ -9,6 +9,7 @@ using Proto.Cluster.Testing;
 using Proto.DependencyInjection;
 using Proto.Remote;
 using Proto.Remote.GrpcNet;
+using Proto.OpenTelemetry;
 
 namespace NextCart.Api.Infrastructure;
 
@@ -74,11 +75,12 @@ public static class ProtoActorExtensions
                 ).WithClusterKinds(actualClusterKinds(provider));
 
             // create the actor system
-
-            return new ActorSystem(actorSystemConfig)
+            var actorSystem = new ActorSystem(actorSystemConfig)
                 .WithServiceProvider(provider)
                 .WithRemote(remoteConfig)
                 .WithCluster(clusterConfig);
+            actorSystem.Root.WithTracing();
+            return actorSystem;
         });
         SetupLogger();
     }

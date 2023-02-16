@@ -10,6 +10,10 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Npgsql;
+using Honeycomb.OpenTelemetry;
+using Proto.OpenTelemetry;
+;
 
 DotEnv.Load(options: new DotEnvOptions(envFilePaths: new[] { ".env", ".env.local" }));
 var builder = WebApplication.CreateBuilder(args);
@@ -44,18 +48,34 @@ var counter = meter.CreateCounter<long>("app.request-counter");
 
 var appResourceBuilder = ResourceBuilder.CreateDefault()
     .AddService(serviceName: serviceName, serviceVersion: serviceVersion);
+
+
+
+var honeycombOptions = new HoneycombOptions
+{
+    ApiKey = Environment.GetEnvironmentVariable("HONEYCOMB_API_KEY")!,
+    Dataset = Environment.GetEnvironmentVariable("HONEYCOMB_DATASET")!,
+    ServiceName = serviceName,
+    ServiceVersion = serviceVersion,
+    ResourceBuilder = appResourceBuilder,
+};
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracerProviderBuilder =>
     {
         tracerProviderBuilder
             .AddConsoleExporter()
             .AddSource(serviceName)
+            .AddProtoActorInstrumentation()
             .SetResourceBuilder(
                 ResourceBuilder.CreateDefault()
                     .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddNpgsql()
+            .AddGrpcClientInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
-            .AddSqlClientInstrumentation();
+            .AddSqlClientInstrumentation()
+            .AddHoneycomb(honeycombOptions);
+        //            .AddAutoInstrumentations();
     })
     .WithMetrics(metricProviderBuilder =>
     {
