@@ -14,6 +14,18 @@ message AddItem {
     string productId = 1;
 }
 
+message SetShippingAddress {
+    string AddressId = 1;
+    string FirstName = 2;
+    string LastName = 3;
+    string AddressLine1 = 4;
+    string AddressLine2 = 5;
+    string PostalCode = 6;
+    string City = 7;
+    string Country = 8;
+    string Email = 9;
+}
+
 message IncreaseQuantity {
     string productId = 1;
 }
@@ -45,16 +57,29 @@ message ItemDto {
     int32 quantity = 3;
 }
 
+message AddressDto {
+    string addressId = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string addressLine1 = 4;
+    string addressLine2 = 5;
+    string postalCode = 6;
+    string city = 7;
+    string country = 8;
+    string email = 9;
+}
+
 message CartDto {
     string id = 1;
     repeated ItemDto items = 2;
-    float total = 3;
+    AddressDto shippingAddress = 3;
+    float total = 4;
 
     int32 version = 99;
 }
 
 enum ErrorCode {
-    Unknown = 0;    
+    Unknown = 0;
     CartNotFound = 1;
     DuplicateCartId = 2;
 }

@@ -6,13 +6,15 @@ public static class DomainMapper
 {
     public static CreateCart ToDomain(this Contracts.Cart.Proto.CreateCart dto) => new(Guid.Parse(dto.Id));
     public static AddItem ToDomain(this Contracts.Cart.Proto.AddItem dto, Func<string, Product> GetProduct) => new(GetProduct(dto.ProductId));
-    public static Domain.Cart.Cart ToDomain(this Contracts.Cart.Proto.CartDto dto) => new(Guid.Parse(dto.Id), dto.Items?.Select(x => x.ToDomain()), dto.Total, dto.Version);
+    public static Domain.Cart.Cart ToDomain(this Contracts.Cart.Proto.CartDto dto) => new(Guid.Parse(dto.Id), dto.Items?.Select(x => x.ToDomain()), dto.ShippingAddress.ToDomain(), dto.Total, dto.Version);
     public static Item ToDomain(this Contracts.Cart.Proto.ItemDto dto) => new(dto.Product.ToDomain(), dto.ItemTotal, dto.Quantity);
     public static Product ToDomain(this Contracts.Cart.Proto.ProductDto dto) => new(dto.ProductId, dto.Name, dto.Url, dto.MainImage, dto.Amount, dto.Currency);
     public static RemoveItem ToDomain(this Contracts.Cart.Proto.RemoveItem dto) => new(dto.ProductId);
     public static IncreaseItemQuantity ToDomain(this Contracts.Cart.Proto.IncreaseQuantity dto) => new(dto.ProductId);
     public static DecreaseItemQuantity ToDomain(this Contracts.Cart.Proto.DecreaseQuantity dto) => new(dto.ProductId);
     public static ClearCart ToDomain(this Contracts.Cart.Proto.Clear _) => new();
+    public static SetShippingAddress ToDomain(this Contracts.Cart.Proto.SetShippingAddress dto) => new(dto.AddressId, dto.FirstName, dto.LastName, dto.AddressLine1, dto.AddressLine2, dto.City, dto.PostalCode, dto.Country, dto.Email);
+    public static Address ToDomain(this Contracts.Cart.Proto.AddressDto dto) => new(dto.AddressId, dto.FirstName, dto.LastName, dto.AddressLine1, dto.AddressLine2, dto.City, dto.PostalCode, dto.Country, dto.Email);
 
     public static Contracts.Cart.Proto.CartDto ToDto(this Domain.Cart.Cart cart)
     {

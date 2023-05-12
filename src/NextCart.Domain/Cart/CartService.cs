@@ -23,7 +23,8 @@ namespace NextCart.Domain.Cart
         public static CartEvent[] Handle(Cart cart, IncreaseItemQuantity command)
         {
             var item = cart.Items?.First(x => x.Product.ProductId == command.ProductId);
-            if (item == null) throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
+            if (item == null)
+                throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
             var newItem = item with { Quantity = item.Quantity + 1, ItemTotal = item.ItemTotal + item.Product.Amount };
             var newTotal = cart.Total + item.Product.Amount;
             return new[]
@@ -35,7 +36,8 @@ namespace NextCart.Domain.Cart
         public static CartEvent[] Handle(Cart cart, RemoveItem command)
         {
             var item = cart.Items?.First(x => x.Product.ProductId == command.ProductId);
-            if (item == null) throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
+            if (item == null)
+                throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
             var newTotal = cart.Total - item.ItemTotal;
             return new[]
             {
@@ -46,8 +48,10 @@ namespace NextCart.Domain.Cart
         public static CartEvent[] Handle(Cart cart, DecreaseItemQuantity command)
         {
             var item = cart.Items?.First(x => x.Product.ProductId == command.ProductId);
-            if (item == null) throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
-            if (item.Quantity == 1) return Handle(cart, new RemoveItem(command.ProductId));
+            if (item == null)
+                throw NextCartExceptions.InvalidProductId(command.ProductId, cart.Id);
+            if (item.Quantity == 1)
+                return Handle(cart, new RemoveItem(command.ProductId));
             var newItem = item with { Quantity = item.Quantity - 1, ItemTotal = item.ItemTotal - item.Product.Amount };
             var newTotal = cart.Total - item.Product.Amount;
             return new[]
@@ -56,12 +60,14 @@ namespace NextCart.Domain.Cart
             };
         }
 
-        public static CartEvent[] Handle(Cart cart, ClearCart command)
-        {
-            return new[]
+        public static CartEvent[] Handle(Cart cart, ClearCart command) => new[]
             {
                 new CartCleared()
             };
-        }
+
+        public static CartEvent[] Handle(Cart cart, SetShippingAddress command) => new[]
+            {
+                new ShippingAddressSet(command.AddressId, command.FirstName, command.LastName, command.AddressLine1, command.AddressLine2, command.City, command.PostalCode, command.Country, command.Email)
+            };
     }
 }

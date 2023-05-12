@@ -1,5 +1,15 @@
 namespace NextCart.Domain.Cart;
 
+public record Address(
+    string AddressId,
+    string FirstName,
+    string LastName,
+    string AddressLine1,
+    string AddressLine2,
+    string City,
+    string PostalCode,
+    string Country,
+    string Email);
 public record Product(
     string ProductId,
     string Name,
@@ -18,6 +28,7 @@ public record IncreaseItemQuantity(string ProductId);
 public record RemoveItem(string ProductId);
 public record DecreaseItemQuantity(string ProductId);
 public record ClearCart();
+public record SetShippingAddress(string AddressId, string FirstName, string LastName, string AddressLine1, string AddressLine2, string City, string PostalCode, string Country, string Email);
 
 public record CartCreated(Guid CartId) : CartEvent;
 public record ItemAdded(Item Item, float NewTotal) : CartEvent;
@@ -25,10 +36,12 @@ public record ItemQuantityIncreased(Item Item, float NewTotal) : CartEvent;
 public record ItemQuantityDecreased(Item Item, float NewTotal) : CartEvent;
 public record ItemRemoved(string ProductId, float NewTotal) : CartEvent;
 public record CartCleared() : CartEvent;
+public record ShippingAddressSet(string AddressId, string FirstName, string LastName, string AddressLine1, string AddressLine2, string City, string PostalCode, string Country, string Email) : CartEvent;
 
 public record Cart(
     Guid Id,
     IEnumerable<Item>? Items = null,
+    Address ShippingAddress = null!,
     float Total = 0,
     int Version = 1)
 {
@@ -57,5 +70,18 @@ public record Cart(
     {
         Items = new List<Item> { },
         Total = 0
+    };
+    public Cart Apply(ShippingAddressSet shippingAddress) => this with
+    {
+        ShippingAddress = new Address(
+            shippingAddress.AddressId,
+            shippingAddress.FirstName,
+            shippingAddress.LastName,
+            shippingAddress.AddressLine1,
+            shippingAddress.AddressLine2,
+            shippingAddress.City,
+            shippingAddress.PostalCode,
+            shippingAddress.Country,
+            shippingAddress.Email)
     };
 }

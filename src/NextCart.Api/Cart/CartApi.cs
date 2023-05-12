@@ -5,13 +5,15 @@ using Proto;
 using NextCart.Contracts.Cart.Proto;
 using Polly;
 using NextCart.Api.Infrastructure;
-using Proto.OpenTelemetry;
 
 namespace NextCart.Api.Cart;
 
 #region requests
 public record CreateCartRequest(string cartId);
 public record AddItemRequest(string productId);
+public record SetShippingAddressRequest(string addressId, string firstName, string lastName, string addressLine1, string addressLine2, string city, string postalCode, string country, string email);
+public record AddPaymentMethodRequest(string paymentMethod, Dictionary<string, string> paymentMethodData);
+
 #endregion
 
 public static class CartApi
@@ -30,9 +32,41 @@ public static class CartApi
         group.MapPost("/{id}/clear", ClearCart);
         group.MapPost("/{id}/items/{productId}/increasequantity", IncreaseQuantity);
         group.MapPost("/{id}/items/{productId}/decreasequantity", DecreaseQuantity);
+        group.MapPost("/{id}/shippingaddress", AddShippingAddress);
         group.MapDelete("/{id}/items/{productId}", RemoveItem);
 
         return group;
+    }
+
+    private static async Task<Ok<CartDto>> AddShippingAddress(ActorSystem actorSystem, IRootContext rootContext, [FromRoute] string id, [FromBody] SetShippingAddressRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var grain = actorSystem.Cluster().GetCartGrain(id);
+            var result = await
+                _policy.ExecuteAsync(async () => await grain.SetShippingAddress(new SetShippingAddress
+                {
+                    AddressId = request.addressId,
+                    FirstName = request.firstName,
+                    LastName = request.lastName,
+                    AddressLine1 = request.addressLine1,
+                    AddressLine2 = request.addressLine2,
+                    City = request.city,
+                    PostalCode = request.postalCode,
+                    Country = request.country,
+                    Email = request.email
+                }, rootContext, ct));
+            if (result?.Cart is not null)
+            {
+                return TypedResults.Ok(result.Cart);
+            }
+            throw new ApiException(result!.Error!);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"====> Exception: {ex}");
+            throw;
+        }
     }
 
     private static async Task<Created<CartDto>> CreateCart(ActorSystem actorSystem, IRootContext rootContext, [FromBody] CreateCartRequest request, CancellationToken ct)

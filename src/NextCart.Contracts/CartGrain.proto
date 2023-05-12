@@ -11,5 +11,6 @@ service CartGrain {
   rpc RemoveItem (RemoveItem) returns (CartResponse);
   rpc IncreaseQuantity (IncreaseQuantity) returns (CartResponse);
   rpc DecreaseQuantity (DecreaseQuantity) returns (CartResponse);
+  rpc SetShippingAddress(SetShippingAddress) returns (CartResponse);
   rpc Clear (Clear) returns (CartResponse);
 }
